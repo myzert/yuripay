@@ -1,0 +1,106 @@
+<div class="space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-white">Manajemen Member & Saldo</h3>
+            <p class="text-xs text-slate-400 mt-1">Pantau member, ubah saldo manual, dan kelola status verifikasi akun</p>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wider text-slate-400 bg-slate-950/60 border-b border-slate-800">
+                        <th class="p-4">Discord ID</th>
+                        <th class="p-4">Username</th>
+                        <th class="p-4">Saldo Saat Ini</th>
+                        <th class="p-4">Total Belanja</th>
+                        <th class="p-4">Status Verifikasi</th>
+                        <th class="p-4 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    <% if (users.length === 0) { %>
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-500">Belum ada user yang terdaftar dalam database.</td>
+                        </tr>
+                    <% } %>
+                    <% users.forEach(u => { %>
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="p-4 font-mono text-xs text-indigo-400"><%= u.discord_id %></td>
+                            <td class="p-4 font-semibold text-white"><%= u.username || 'Tanpa Nama' %></td>
+                            <td class="p-4 font-bold text-emerald-400 text-base"><%= formatRupiah(u.balance) %></td>
+                            <td class="p-4 text-slate-300"><%= formatRupiah(u.total_spent) %></td>
+                            <td class="p-4">
+                                <% if (u.verified) { %>
+                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        ✅ TERVERIFIKASI
+                                    </span>
+                                <% } else { %>
+                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                        ⚠️ BELUM VERIFIKASI
+                                    </span>
+                                <% } %>
+                            </td>
+                            <td class="p-4 text-right space-x-2">
+                                <button onclick="openBalanceModal('<%= u.discord_id %>', '<%= u.username %>', <%= u.balance %>)"
+                                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition inline-flex items-center gap-1.5 shadow-md shadow-indigo-600/30">
+                                    <i class="fa-solid fa-money-bill-transfer"></i> Ubah Saldo
+                                </button>
+                                <form action="/users/toggle-verify/<%= u.discord_id %>" method="POST" class="inline">
+                                    <button type="submit" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition border border-slate-700">
+                                        <%= u.verified ? 'Batal Verifikasi' : 'Verifikasi' %>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Balance -->
+    <div id="modal-edit-balance" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+                <div>
+                    <h4 class="text-lg font-bold text-white">Sesuaikan Saldo Member</h4>
+                    <p id="modal-user-info" class="text-xs text-indigo-400 font-mono mt-0.5"></p>
+                </div>
+                <button onclick="document.getElementById('modal-edit-balance').classList.add('hidden')" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form action="/users/edit-balance" method="POST" class="space-y-4">
+                <input type="hidden" name="discord_id" id="modal-discord-id">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Jumlah Perubahan Saldo (+ / -)</label>
+                    <input type="number" name="amount" required placeholder="Contoh: 50000 atau -10000"
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono focus:outline-none focus:border-indigo-500">
+                    <p class="text-[11px] text-slate-400 mt-1">Masukkan angka positif untuk menambah saldo, atau minus (-) untuk memotong.</p>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('modal-edit-balance').classList.add('hidden')"
+                        class="px-4 py-2 text-slate-400 hover:text-white font-medium">Batal</button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-md shadow-indigo-600/30">
+                        Perbarui Saldo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function openBalanceModal(discordId, username, currentBal) {
+        document.getElementById('modal-discord-id').value = discordId;
+        document.getElementById('modal-user-info').innerText = `${username} (${discordId}) | Saldo: Rp ${Number(currentBal).toLocaleString('id-ID')}`;
+        document.getElementById('modal-edit-balance').classList.remove('hidden');
+    }
+</script>

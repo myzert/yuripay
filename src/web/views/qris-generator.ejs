@@ -1,0 +1,60 @@
+<div class="space-y-8 max-w-4xl">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-white">Generator QRIS Dinamis (Kasir Web)</h3>
+            <p class="text-xs text-slate-400 mt-1">Cetak kode QRIS nominal presisi otomatis menggunakan standar EMVCo Bank Indonesia</p>
+        </div>
+    </div>
+
+    <!-- QRIS Generator Form Card -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
+        <form action="/qris/generate" method="POST" class="space-y-6">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                    Nominal Pembayaran (Rupiah)
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 font-bold">
+                        Rp
+                    </span>
+                    <input type="number" name="nominal" required min="100" placeholder="Contoh: 15000"
+                        class="w-full pl-12 pr-4 py-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-white font-mono text-lg font-bold placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition">
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info text-cyan-400"></i>
+                    <span>Sistem akan menambahkan kode unik acak (misal +Rp 211) secara otomatis untuk verifikasi instan anti-tabrakan.</span>
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                    Keterangan / Nama Pesanan (Opsional)
+                </label>
+                <input type="text" name="custom_name" placeholder="Contoh: Pembayaran Steam Key VIP #1"
+                    class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition">
+            </div>
+
+            <div class="p-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-qrcode text-cyan-400 text-xl"></i>
+                    <div>
+                        <p class="text-xs font-bold text-slate-200">Format QRIS: EMVCo Dynamic (010212)</p>
+                        <p class="text-[11px] text-slate-500">Mendukung BCA, Mandiri, BRI, BNI, GoPay, OVO, Dana, ShopeePay & Semua Bank</p>
+                    </div>
+                </div>
+                <span class="px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    CRC16 VALID
+                </span>
+            </div>
+
+            <button type="submit"
+                class="w-full py-4 bg-[#00AED6] hover:bg-[#0084A3] text-white font-bold rounded-2xl transition shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2 text-base">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Cetak QRIS & Buka Halaman Checkout</span>
+            </button>
+        </form>
+    </div>
+
+</div>

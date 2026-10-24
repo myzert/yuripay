@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= appName %> Dashboard & Kasir - <%= storeName %></title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        googleBlue: '#1a73e8',
+                        googleBlueHover: '#1557b0',
+                        googleGreen: '#1e8e3e',
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                        darkBorder: '#334155',
+                        darkText: '#f8fafc',
+                        darkSubtext: '#94a3b8'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+        .font-mono { font-family: 'Roboto Mono', monospace; }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .bounce-slow { animation: bounce-slow 2.5s infinite ease-in-out; }
+        @keyframes scale-in {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .scale-in { animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="bg-[#f0f4f9] dark:bg-darkBg text-slate-800 dark:text-darkText min-h-screen flex flex-col justify-between transition-colors duration-200">
+
+    <!-- Top App Bar -->
+    <header class="bg-white dark:bg-darkCard border-b border-slate-200 dark:border-darkBorder px-6 py-3.5 sticky top-0 z-30 shadow-sm transition-colors duration-200">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-tight flex items-center gap-2 text-slate-900 dark:text-white">
+                        <span><%= appName %></span>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-googleBlue dark:text-sky-400 border border-blue-200 dark:border-blue-900">
+                            <%= storeName %>
+                        </span>
+                    </h1>
+                    <p class="text-[11px] text-slate-500 dark:text-darkSubtext font-medium flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full <%= sessionValid ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500' %>"></span>
+                        <span><%= sessionValid ? 'GoPay Gateway Online' : 'GoPay Siaga' %> • Kasir Port <%= dashboardPort %></span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center gap-2">
+                <!-- Admin Email Badge -->
+                <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-darkBorder text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <i class="fa-solid fa-user-shield text-googleBlue dark:text-sky-400"></i>
+                    <span class="max-w-[150px] truncate"><%= adminEmail %></span>
+                </div>
+
+                <!-- API & Webhook Modal Button -->
+                <button onclick="openApiModal()" 
+                    class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-code text-googleBlue dark:text-sky-400"></i>
+                    <span class="hidden sm:inline">API & Webhook</span>
+                </button>
+
+                <!-- Swagger UI Button -->
+                <a href="/docs" target="_blank" 
+                    class="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-book-open text-emerald-500"></i>
+                    <span class="hidden sm:inline">Swagger UI</span>
+                </a>
+
+                <!-- Test Soundbox & Pop-up Demo -->
+                <button onclick="testSoundboxVoice()" 
+                    class="px-3 py-2 rounded-xl bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/40 dark:hover:bg-pink-950/70 text-pink-700 dark:text-pink-300 text-xs font-bold transition border border-pink-200 dark:border-pink-800/50 flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-volume-high text-pink-500"></i>
+                    <span class="hidden sm:inline">Uji Suara</span>
+                </button>
+
+                <!-- Dark / Light Mode Switch -->
+                <button onclick="toggleDarkMode()" 
+                    class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
+                    title="Ganti Mode Tampilan">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+
+                <!-- Logout Button -->
+                <a href="/logout" 
+                    class="w-9 h-9 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center transition border border-rose-200 dark:border-rose-900/50" 
+                    title="Keluar / Logout Admin">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl w-full mx-auto p-4 sm:p-6 my-auto">
+
+        <!-- Top Statistics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Omset Hari Ini</p>
+                    <h3 id="stat-volume" class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
+                        <%= formatRupiah(stats.todayVolume) %>
+                    </h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Transaksi Berhasil</p>
+                    <h3 id="stat-success" class="text-2xl font-black font-mono text-googleBlue dark:text-sky-400 mt-0.5">
+                        <%= stats.todaySuccess %> / <%= stats.todayTotal %>
+                    </h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-googleBlue dark:text-sky-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Payment Gateway</p>
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span>Port <%= paymentPort %> Aktif</span>
+                    </h3>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Midtrans Webhook & Redirect Ready</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-server"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT COLUMN: KASIR & QRIS GENERATOR (7 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-darkCard rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-darkBorder shadow-sm transition-colors duration-200">
+                    
+                    <!-- STAGE 1: FORM INPUT KASIR -->
+                    <div id="stage-input">
+                        <div class="mb-5 pb-3 border-b border-slate-100 dark:border-darkBorder">
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-cash-register text-googleBlue dark:text-sky-400"></i>
+                                <span>Buat Tagihan QRIS Baru</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-darkSubtext mt-0.5">
+                                Masukkan nominal untuk membuat kode pembayaran dan link redirect pelanggan.
+                            </p>
+                        </div>
+
+                        <!-- Input Nominal -->
+                        <div class="mb-5">
+                            <label class="block text-xs font-bold text-slate-500 dark:text-darkSubtext uppercase tracking-wider mb-2">
+                                Nominal Pembayaran (Rupiah)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-xl font-black text-slate-400">
+                                    Rp
+                                </span>
+                                <input type="number" id="input-nominal" min="50" placeholder="0" autofocus
+                                    class="w-full pl-14 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-darkBorder rounded-2xl text-2xl font-black font-mono text-slate-900 dark:text-white focus:outline-none focus:border-googleBlue dark:focus:border-sky-500 transition">
+                            </div>
+                        </div>
+
+                        <!-- Quick Nominal Chips -->
+                        <div class="mb-5">
+                            <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider mb-2">Pilih Cepat:</p>
+                            <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                                <button type="button" onclick="setNominal(50)" class="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkBorder text-xs font-bold text-slate-700 dark:text-slate-200 transition">50</button>
+                                <button type="button" onclick="setNominal(500)" class="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkBorder text-xs font-bold text-slate-700 dark:text-slate-200 transition">500</button>
+                                <button type="button" onclick="setNominal(1000)" class="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkBorder text-xs font-bold text-slate-700 dark:text-slate-200 transition">1.000</button>
+                                <button type="button" onclick="setNominal(5000)" class="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkBorder text-xs font-bold text-slate-700 dark:text-slate-200 transition">5.000</button>
+                                <button type="button" onclick="setNominal(10000)" class="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkBorder text-xs font-bold text-slate-700 dark:text-slate-200 transition">10.000</button>
+                                <button type="button" onclick="setNominal(20000)" class="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkBorder text-xs font-bold text-slate-700 dark:text-slate-200 transition">20.000</button>
+                                <button type="button" onclick="setNominal(50000)" class="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkBorder text-xs font-bold text-slate-700 dark:text-slate-200 transition">50.000</button>
+                                <button type="button" onclick="setNominal(100000)" class="py-2 px-1 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkBorder text-xs font-bold text-slate-700 dark:text-slate-200 transition">100.000</button>
+                            </div>
+                        </div>
+
+                        <!-- ID Pesanan / Order ID (Anti Duplicate on Refresh) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-darkSubtext uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                                    <span>ID Pesanan / Order ID</span>
+                                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Anti-Duplikat</span>
+                                </label>
+                                <input type="text" id="input-order-id" placeholder="Contoh: ORDER-1001"
+                                    class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-googleBlue dark:focus:border-sky-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-darkSubtext uppercase tracking-wider mb-1.5">
+                                    Catatan / Pelanggan (Opsional)
+                                </label>
+                                <input type="text" id="input-memo" placeholder="Contoh: Akun VIP / Pembeli #12"
+                                    class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-googleBlue dark:focus:border-sky-500 transition">
+                            </div>
+                        </div>
+
+                        <!-- Redirect URL & Webhook URL -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-darkSubtext uppercase tracking-wider mb-1.5">
+                                    Redirect URL (Opsional)
+                                </label>
+                                <input type="url" id="input-redirect" placeholder="https://toko-anda.com/selesai"
+                                    class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-googleBlue dark:focus:border-sky-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-darkSubtext uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                                    <span>Webhook URL (Midtrans)</span>
+                                    <span class="text-[10px] text-googleBlue dark:text-sky-400 font-semibold">HTTP POST</span>
+                                </label>
+                                <input type="url" id="input-webhook" placeholder="https://toko-anda.com/api/webhook"
+                                    class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-googleBlue dark:focus:border-sky-500 transition">
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button type="button" id="btn-generate" onclick="handleGenerateQR(false)"
+                                class="py-3.5 bg-googleBlue hover:bg-googleBlueHover text-white font-bold rounded-2xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-bolt" id="gen-icon"></i>
+                                <span>Cetak QR Kasir</span>
+                            </button>
+                            <button type="button" onclick="handleGenerateQR(true)"
+                                class="py-3.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-2xl transition shadow-lg shadow-sky-600/25 flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>Buat & Buka Pegs (Port 3001)</span>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- STAGE 2: PREVIEW QRIS KASIR & LINK REDIRECT -->
+                    <div id="stage-qris" class="hidden text-center">
+                        <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-darkBorder mb-4">
+                            <div class="text-left">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-darkSubtext">Tagihan Kasir</span>
+                                <h3 id="display-title" class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate max-w-[220px]">Pembayaran</h3>
+                            </div>
+                            <span id="display-invoice" class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-googleBlue dark:text-sky-400 border border-blue-200 dark:border-blue-900">
+                                YURI-XXXX
+                            </span>
+                        </div>
+
+                        <!-- Customer Payment Link Banner -->
+                        <div class="p-3 bg-blue-50 dark:bg-slate-900 rounded-2xl border border-blue-200 dark:border-darkBorder text-left mb-4">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-darkSubtext mb-1">
+                                Link Pembayaran Pelanggan (Port <%= paymentPort %>):
+                            </p>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="display-payment-url" readonly 
+                                    class="w-full bg-white dark:bg-darkCard px-3 py-1.5 rounded-xl border border-slate-200 dark:border-darkBorder text-xs font-mono text-googleBlue dark:text-sky-400 select-all">
+                                <button type="button" onclick="copyPaymentUrl()" 
+                                    class="px-3 py-1.5 bg-googleBlue hover:bg-googleBlueHover text-white text-xs font-bold rounded-xl transition flex items-center gap-1 shrink-0">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span id="btn-copy-url-text">Salin</span>
+                                </button>
+                                <a id="btn-open-payment-url" href="#" target="_blank"
+                                    class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1 shrink-0">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    <span>Buka</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Amount Display (Natural, Clean, No "Kode Unik" label) -->
+                        <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-darkBorder mb-4">
+                            <p class="text-[11px] uppercase font-bold text-slate-400 dark:text-darkSubtext">Total Pembayaran</p>
+                            <h2 id="display-amount" class="text-3xl font-black font-mono text-googleBlue dark:text-sky-400 mt-1">
+                                Rp 0
+                            </h2>
+                        </div>
+
+                        <!-- QR Code Image Box -->
+                        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border-2 border-slate-200 dark:border-darkBorder inline-block mx-auto mb-4">
+                            <img id="display-qr-img" src="" alt="Dynamic QRIS" class="w-56 h-56 object-contain rounded-xl">
+                            <div class="mt-2 text-[11px] font-bold text-slate-500 dark:text-darkSubtext">
+                                NMID: ID1024341992468
+                            </div>
+                        </div>
+
+                        <!-- Live Poller & Countdown -->
+                        <div class="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-darkBorder text-xs mb-4">
+                            <span class="text-slate-500 dark:text-darkSubtext flex items-center gap-1.5 font-medium">
+                                <i class="fa-regular fa-clock text-googleBlue dark:text-sky-400"></i>
+                                <span>Sisa Waktu:</span>
+                                <span id="display-countdown" class="font-mono font-bold text-googleBlue dark:text-sky-400 ml-1">10:00</span>
+                            </span>
+                            <span class="flex items-center gap-1.5 text-slate-500 dark:text-darkSubtext font-medium">
+                                <span class="w-2 h-2 rounded-full bg-googleBlue dark:bg-sky-400 animate-ping"></span>
+                                <span id="status-text">Mengecek pembayaran...</span>
+                            </span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" id="btn-manual-check" onclick="checkPaymentStatusNow()"
+                                class="py-3 bg-googleBlue hover:bg-googleBlueHover text-white font-bold rounded-2xl transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 text-xs">
+                                <i class="fa-solid fa-rotate" id="check-icon"></i>
+                                <span>Cek Status Sekarang</span>
+                            </button>
+                            <button type="button" onclick="cancelTransaction()"
+                                class="py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-2xl transition text-xs">
+                                Batal & Input Baru
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- STAGE 3: PEMBAYARAN SUKSES VIEW -->
+                    <div id="stage-success" class="hidden text-center py-4">
+                        <div class="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-googleGreen dark:text-emerald-400 flex items-center justify-center text-4xl mx-auto mb-4">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+
+                        <span class="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-googleGreen dark:text-emerald-400 font-bold text-xs">
+                            LUNAS • TERVERIFIKASI
+                        </span>
+
+                        <h2 class="text-2xl font-black text-slate-900 dark:text-white mt-3">Pembayaran Berhasil!</h2>
+                        <p id="success-nominal" class="text-3xl font-black font-mono text-googleGreen dark:text-emerald-400 my-2">Rp 0</p>
+                        <p class="text-xs text-slate-500 dark:text-darkSubtext">
+                            Pembayaran telah diterima dan terverifikasi secara instan.
+                        </p>
+
+                        <div id="success-details" class="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-darkBorder my-5 text-left text-xs font-mono space-y-1.5 text-slate-700 dark:text-slate-300">
+                        </div>
+
+                        <button type="button" onclick="resetToInput()"
+                            class="w-full py-4 bg-googleBlue hover:bg-googleBlueHover text-white font-bold rounded-2xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Buat Transaksi Kasir Baru</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- RIWAYAT TRANSAKSI YURIPAY TABLE -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl p-6 border border-slate-200 dark:border-darkBorder shadow-sm transition-colors duration-200">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-darkBorder mb-3">
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-clock-rotate-left text-googleBlue dark:text-sky-400"></i>
+                            <span>Riwayat Tagihan Dibuat</span>
+                        </span>
+                        <button onclick="refreshDashboardData()" class="text-[11px] text-googleBlue dark:text-sky-400 hover:underline font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-400 dark:text-darkSubtext border-b border-slate-100 dark:border-darkBorder">
+                                    <th class="pb-2">Invoice / Order</th>
+                                    <th class="pb-2">Pesanan</th>
+                                    <th class="pb-2">Nominal</th>
+                                    <th class="pb-2">Status</th>
+                                    <th class="pb-2 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-body" class="divide-y divide-slate-100 dark:divide-darkBorder">
+                                <% if (recentPayments && recentPayments.length > 0) { %>
+                                    <% recentPayments.forEach(item => { %>
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                                            <td class="py-2.5 font-mono font-bold text-googleBlue dark:text-sky-400">
+                                                <%= item.id %>
+                                                <% if (item.order_id && item.order_id !== item.id) { %>
+                                                    <span class="block text-[10px] text-slate-400 font-mono font-normal"><%= item.order_id %></span>
+                                                <% } %>
+                                            </td>
+                                            <td class="py-2.5 text-slate-600 dark:text-slate-300 max-w-[130px] truncate"><%= item.custom_name %></td>
+                                            <td class="py-2.5 font-mono font-bold"><%= formatRupiah(item.total_amount) %></td>
+                                            <td class="py-2.5">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold <%= item.status === 'PAID' ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400' : (item.status === 'PENDING' ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500') %>">
+                                                    <%= item.status %>
+                                                </span>
+                                            </td>
+                                            <td class="py-2.5 text-right">
+                                                <a href="<%= baseUrl %>/pay/<%= item.id %>" target="_blank" 
+                                                   class="text-[11px] text-googleBlue dark:text-sky-400 hover:underline font-bold inline-flex items-center gap-1">
+                                                    <span>Checkout</span>
+                                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="py-4 text-center text-slate-400">Belum ada riwayat transaksi.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: GOPAY LIVE MUTATIONS, WEBHOOK LOGS & SYSTEM INFO (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+
+                <!-- Real-time GoPay Settlement Mutations -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl p-6 border border-slate-200 dark:border-darkBorder shadow-sm transition-colors duration-200">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-darkBorder mb-3">
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrow-down-long text-googleGreen dark:text-emerald-400"></i>
+                            <span>Mutasi Masuk GoPay Realtime</span>
+                        </span>
+                        <button onclick="fetchRecentMutations()" class="text-[11px] text-googleBlue dark:text-sky-400 hover:underline font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div id="mutations-list" class="space-y-2 text-xs">
+                        <p class="text-slate-400 text-center py-4 text-xs">Memuat mutasi GoPay...</p>
+                    </div>
+                </div>
+
+                <!-- Midtrans Webhook Delivery Logs Feed -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl p-6 border border-slate-200 dark:border-darkBorder shadow-sm transition-colors duration-200">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-darkBorder mb-3">
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-paper-plane text-sky-500"></i>
+                            <span>Pengiriman Webhook (Midtrans)</span>
+                        </span>
+                        <button onclick="fetchWebhookLogs()" class="text-[11px] text-googleBlue dark:text-sky-400 hover:underline font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div id="webhook-logs-list" class="space-y-2 text-xs">
+                        <p class="text-slate-400 text-center py-3 text-xs">Belum ada webhook yang dikirim.</p>
+                    </div>
+                </div>
+
+                <!-- Architecture & Security Card -->
+                <div class="bg-white dark:bg-darkCard rounded-3xl p-6 border border-slate-200 dark:border-darkBorder shadow-sm transition-colors duration-200">
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lock text-emerald-500"></i>
+                        <span>Keamanan & Anti-Duplikat</span>
+                    </h3>
+                    <div class="space-y-3 text-xs text-slate-600 dark:text-darkSubtext">
+                        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder">
+                            <p class="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                                <span>Idempotensi Refresh</span>
+                                <span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold">100% Aman</span>
+                            </p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Halaman kasir & checkout tidak akan membuat transaksi ganda saat direfresh.</p>
+                        </div>
+
+                        <div class="p-3 rounded-2xl bg-blue-50/60 dark:bg-slate-900 border border-blue-200 dark:border-darkBorder">
+                            <p class="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                                <span>Webhook HTTP Ala Midtrans</span>
+                                <span class="font-mono text-sky-600 dark:text-sky-400">SHA512 Signature</span>
+                            </p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Notifikasi otomatis terkirim ke server backend Anda seketika pembayaran lunas.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-400 dark:text-darkSubtext">
+        &copy; 2026 <%= appName %> by <%= storeName %> • Dual-Port QRIS Gateway & Soundbox
+    </footer>
+
+
+    <!-- ============================================== -->
+    <!-- API & MIDTRANS WEBHOOK DOCUMENTATION MODAL     -->
+    <!-- ============================================== -->
+    <div id="api-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md hidden transition-all duration-300">
+        <div class="bg-white dark:bg-darkCard rounded-[32px] max-w-2xl w-full p-6 sm:p-8 text-left shadow-2xl border border-slate-200 dark:border-darkBorder max-h-[90vh] overflow-y-auto scale-in">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-darkBorder mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Integrasi API & Webhook Midtrans</h3>
+                        <p class="text-xs text-slate-500 dark:text-darkSubtext">100% Kompatibel dengan Skema Notifikasi Midtrans</p>
+                    </div>
+                </div>
+                <button onclick="closeApiModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- API Key Box -->
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-darkBorder mb-4">
+                <div class="flex items-center justify-between text-xs mb-1">
+                    <span class="font-bold text-slate-500 dark:text-darkSubtext uppercase tracking-wider text-[10px]">API Server Key Anda:</span>
+                    <span class="text-emerald-600 font-bold text-[10px]">LIVE KEY</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="api-key-val" readonly value="<%= apiKey %>" 
+                        class="w-full bg-white dark:bg-darkCard px-3 py-1.5 rounded-xl border border-slate-200 dark:border-darkBorder text-xs font-mono font-bold text-slate-800 dark:text-slate-200 select-all">
+                    <button onclick="navigator.clipboard.writeText('<%= apiKey %>'); alert('API Key tersalin!');" 
+                        class="px-3 py-1.5 bg-googleBlue hover:bg-googleBlueHover text-white text-xs font-bold rounded-xl transition shrink-0">
+                        Salin Key
+                    </button>
+                </div>
+            </div>
+
+            <!-- Swagger UI & JSON Link Banner -->
+            <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 text-xs">
+                        <i class="fa-solid fa-book-open text-emerald-600 dark:text-emerald-400"></i>
+                        <span>Swagger & OpenAPI 3.0 Documentation</span>
+                    </h4>
+                    <p class="text-[11px] text-slate-500 dark:text-darkSubtext mt-0.5">
+                        Dokumentasi interaktif Swagger UI & file <code>swagger.json</code> untuk integrasi cepat
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a href="/docs" target="_blank" 
+                       class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1 transition shadow-sm">
+                        <span>Buka Swagger UI</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    </a>
+                    <a href="/swagger.json" target="_blank" download="swagger.json"
+                       class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs flex items-center gap-1 transition border border-slate-200 dark:border-slate-700">
+                        <i class="fa-solid fa-download"></i>
+                        <span>swagger.json</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- OP Redirect & Offset Rules Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                <div class="p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-2xl border border-blue-200 dark:border-blue-900/50">
+                    <h5 class="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5 text-xs">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-googleBlue dark:text-sky-400"></i>
+                        <span>Link Redirect OP (Overpowered):</span>
+                    </h5>
+                    <p class="text-[11px] text-slate-600 dark:text-darkSubtext leading-relaxed">
+                        Saat selesai bayar, pembeli dialihkan ke <code>redirect_url</code> dengan query parameter lengkap:
+                        <code class="block font-mono bg-white dark:bg-slate-900 p-2 rounded-xl mt-1 text-[10px] text-googleBlue dark:text-sky-300 overflow-x-auto">
+                            ?order_id=...&status_code=200&transaction_status=settlement&gross_amount=...
+                        </code>
+                    </p>
+                </div>
+
+                <div class="p-3 bg-amber-50/70 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-900/50">
+                    <h5 class="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5 text-xs">
+                        <i class="fa-solid fa-calculator text-amber-600"></i>
+                        <span>Aturan Offset Cerdas:</span>
+                    </h5>
+                    <ul class="list-disc pl-4 text-[11px] text-slate-600 dark:text-darkSubtext space-y-0.5">
+                        <li><strong>50 perak+ (s/d &lt; 1.000):</strong> Offset cuma <strong>+1 perak</strong> agar hemat & presisi.</li>
+                        <li><strong>1.000 ke atas:</strong> Offset acak 1 s/d 199 (<strong>tidak boleh lebih dari 200</strong>).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Documentation Content -->
+            <div class="space-y-4 text-xs">
+                <!-- 1. Endpoint Create Payment -->
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-mono text-[10px] font-bold">POST</span>
+                        <code class="font-mono text-googleBlue dark:text-sky-400">http://localhost:3000/api/create-payment</code>
+                    </h4>
+                    <p class="text-slate-500 dark:text-darkSubtext">
+                        Gunakan parameter <code class="font-mono text-emerald-600 font-bold">order_id</code> agar aman dari pembuatan transaksi ganda saat pengguna merefresh browser.
+                    </p>
+                </div>
+
+                <!-- Code Snippet Tabs -->
+                <div>
+                    <div class="flex items-center gap-2 mb-2 border-b border-slate-100 dark:border-darkBorder pb-2">
+                        <button onclick="setApiTab('curl')" id="tab-curl" class="font-bold px-3 py-1 rounded-lg bg-googleBlue text-white text-[11px]">cURL</button>
+                        <button onclick="setApiTab('node')" id="tab-node" class="font-bold px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px]">Node.js</button>
+                        <button onclick="setApiTab('php')" id="tab-php" class="font-bold px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px]">PHP (Midtrans Handler)</button>
+                        <button onclick="setApiTab('python')" id="tab-python" class="font-bold px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px]">Python</button>
+                    </div>
+
+                    <pre id="code-curl" class="p-3.5 bg-slate-900 text-sky-300 rounded-2xl font-mono text-[11px] overflow-x-auto">curl -X POST http://localhost:3000/api/create-payment \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nominal": 15000,
+    "order_id": "ORDER-8892",
+    "custom_name": "Pesanan VIP #8892",
+    "redirect_url": "https://tokosaya.com/selesai",
+    "webhook_url": "https://tokosaya.com/api/midtrans-webhook"
+  }'</pre>
+
+                    <pre id="code-node" class="hidden p-3.5 bg-slate-900 text-emerald-300 rounded-2xl font-mono text-[11px] overflow-x-auto">const axios = require('axios');
+
+// 1. Buat pembayaran (Aman dari refresh karena ada order_id)
+async function checkout() {
+  const res = await axios.post('http://localhost:3000/api/create-payment', {
+    nominal: 15000,
+    order_id: 'ORDER-8892',
+    webhook_url: 'https://tokosaya.com/api/webhook'
+  });
+  console.log('Redirect pembeli ke:', res.data.data.payment_url);
+}
+
+// 2. Handler Webhook di Express.js (100% format Midtrans)
+app.post('/api/webhook', (req, res) => {
+  const { order_id, transaction_status, gross_amount, signature_key } = req.body;
+  
+  if (transaction_status === 'settlement') {
+    console.log(`Pembayaran pesanan ${order_id} LUNAS!`);
+    // Berikan produk / update DB toko Anda
+  }
+  res.status(200).send('OK');
+});</pre>
+
+                    <pre id="code-php" class="hidden p-3.5 bg-slate-900 text-amber-300 rounded-2xl font-mono text-[11px] overflow-x-auto">&lt;?php
+// Handler Webhook Midtrans di PHP
+$json = file_get_contents('php://input');
+$data = json_decode($json, true);
+
+$serverKey = "<%= apiKey %>";
+$orderId = $data['order_id'];
+$statusCode = $data['status_code'];
+$grossAmount = $data['gross_amount'];
+$signature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+
+if ($signature === $data['signature_key'] && $data['transaction_status'] === 'settlement') {
+    // Valid & LUNAS! Proses pesanan pelanggan
+    file_put_contents('payment.log', "Order $orderId Berhasil Lunas\n", FILE_APPEND);
+}
+
+http_response_code(200);
+echo "OK";</pre>
+
+                    <pre id="code-python" class="hidden p-3.5 bg-slate-900 text-purple-300 rounded-2xl font-mono text-[11px] overflow-x-auto">from flask import Flask, request, jsonify
+import hashlib
+
+app = Flask(__name__)
+
+@app.route('/api/webhook', methods=['POST'])
+def midtrans_webhook():
+    data = request.json
+    order_id = data.get('order_id')
+    status = data.get('transaction_status')
+    
+    if status == 'settlement':
+        print(f"Pesanan {order_id} terverifikasi LUNAS!")
+        # Update database toko Anda
+        
+    return jsonify({"status": "OK"}), 200</pre>
+                </div>
+
+                <!-- Midtrans Webhook Payload Format -->
+                <div class="mt-4 pt-3 border-t border-slate-100 dark:border-darkBorder">
+                    <p class="font-bold text-slate-800 dark:text-slate-200 mb-1">Payload Webhook Terkirim (Persis Midtrans):</p>
+                    <pre class="p-3.5 bg-slate-900 text-slate-200 rounded-2xl font-mono text-[10px] overflow-x-auto">{
+  "transaction_time": "2026-10-24 15:45:00",
+  "transaction_status": "settlement",
+  "transaction_id": "TX-01a16cf9-baa0-7000",
+  "status_message": "midtrans payment notification",
+  "status_code": "200",
+  "signature_key": "c2b7670984857ddc563e3d9370fe4...",
+  "payment_type": "qris",
+  "order_id": "ORDER-8892",
+  "merchant_id": "G538138242",
+  "gross_amount": "15313.00",
+  "currency": "IDR",
+  "settlement_time": "2026-10-24 15:45:15",
+  "issuer": "gopay",
+  "acquirer": "gopay",
+  "fraud_status": "accept"
+}</pre>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-darkBorder text-right">
+                <button onclick="closeApiModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- CUTE MARIN KITAGAWA POP-UP MODAL               -->
+    <!-- ============================================== -->
+    <div id="anime-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md hidden transition-all duration-300">
+        <div class="bg-white dark:bg-darkCard rounded-[36px] max-w-sm w-full p-6 text-center shadow-2xl border-2 border-pink-300 dark:border-pink-500/40 relative overflow-hidden scale-in">
+            <!-- Background Soft Glow -->
+            <div class="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-pink-200/50 dark:bg-pink-600/20 blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-16 -left-16 w-36 h-36 rounded-full bg-blue-200/50 dark:bg-blue-600/20 blur-2xl pointer-events-none"></div>
+
+            <!-- Cute Marin Kitagawa Thank You Image -->
+            <div class="relative mb-4">
+                <img src="/images/thank-you.webp" 
+                     onerror="this.onerror=null; this.src='https://gifdb.com/images/high/marin-kitagawa-thank-you-anime-cute-smile-usr1oj8xvh9j7of9.webp';" 
+                     alt="Marin Kitagawa Thank You" 
+                     class="w-56 h-56 mx-auto object-cover rounded-3xl shadow-lg border-2 border-pink-300 dark:border-pink-400 bounce-slow">
+                <div class="absolute -bottom-3 right-8 bg-pink-500 text-white text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md border-2 border-white dark:border-darkCard flex items-center gap-1">
+                    <span>Arigatou!</span>
+                    <i class="fa-solid fa-heart text-[10px]"></i>
+                </div>
+            </div>
+
+            <!-- Heading & Japanese Thank You -->
+            <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-2">Arigatou Gozaimasu! ✨</h3>
+            <p class="text-xs text-slate-500 dark:text-darkSubtext mt-1">
+                Terima kasih banyak atas pembeliannya di <span class="font-bold text-googleBlue dark:text-sky-400"><%= storeName %></span>!
+            </p>
+
+            <!-- Amount Box -->
+            <div class="my-4 p-3.5 bg-gradient-to-r from-pink-50 via-slate-50 to-blue-50 dark:from-pink-950/30 dark:via-slate-800 dark:to-blue-950/30 rounded-2xl border border-pink-200/80 dark:border-pink-800/40">
+                <p class="text-[11px] uppercase tracking-wider font-bold text-pink-600 dark:text-pink-400">Pembayaran Berhasil Diterima</p>
+                <h4 id="modal-amount" class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">Rp 0</h4>
+            </div>
+
+            <!-- Action Button -->
+            <button type="button" onclick="closeAnimeModal()"
+                class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-extrabold rounded-2xl transition shadow-lg shadow-pink-500/30 flex items-center justify-center gap-2 text-sm">
+                <span>Sama-Sama! Selesai</span>
+                <i class="fa-solid fa-heart"></i>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- SOUNDBOX & DASHBOARD JAVASCRIPT                -->
+    <!-- ============================================== -->
+    <script>
+        const baseUrl = '<%= baseUrl %>';
+        let currentPayment = null;
+        let countdownTimer = null;
+        let pollTimer = null;
+        let isPaid = false;
+
+        // Dark Mode Logic
+        function initTheme() {
+            const savedTheme = localStorage.getItem('yuripay_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').className = 'fa-solid fa-sun';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon').className = 'fa-solid fa-moon';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('yuripay_theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        initTheme();
+
+        // Audio files
+        const arigatoLocal = new Audio('/sounds/cute-arigato.mp3');
+        const arigatoOnline = new Audio('https://www.myinstants.com/media/sounds/cute-arigato.mp3');
+
+        // Play Cute Arigato Sound Only
+        function playCuteSound() {
+            arigatoLocal.currentTime = 0;
+            arigatoLocal.play().catch(() => {
+                arigatoOnline.currentTime = 0;
+                arigatoOnline.play().catch(e => console.warn('Audio play error:', e));
+            });
+        }
+
+        function launchConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 90,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function testSoundboxVoice() {
+            showAnimePopup(15000);
+            playCuteSound();
+            launchConfetti();
+        }
+
+        function showAnimePopup(nominal) {
+            document.getElementById('modal-amount').innerText = formatRupiah(nominal);
+            document.getElementById('anime-modal').classList.remove('hidden');
+        }
+
+        function closeAnimeModal() {
+            document.getElementById('anime-modal').classList.add('hidden');
+        }
+
+        function setNominal(amount) {
+            document.getElementById('input-nominal').value = amount;
+        }
+
+        function formatRupiah(num) {
+            return 'Rp ' + Number(num || 0).toLocaleString('id-ID');
+        }
+
+        // Generate Dynamic Payment & QRIS (Idempotent)
+        async function handleGenerateQR(openDirectly = false) {
+            const nominalInput = document.getElementById('input-nominal');
+            const nominal = parseInt(nominalInput.value, 10);
+            const orderId = document.getElementById('input-order-id').value.trim();
+            const memo = document.getElementById('input-memo').value.trim();
+            const redirectUrl = document.getElementById('input-redirect').value.trim();
+            const webhookUrl = document.getElementById('input-webhook').value.trim();
+
+            if (isNaN(nominal) || nominal < 50) {
+                alert('Silakan masukkan nominal pembayaran yang valid (Minimal Rp 50)');
+                nominalInput.focus();
+                return;
+            }
+
+            const btn = document.getElementById('btn-generate');
+            const icon = document.getElementById('gen-icon');
+            icon.className = 'fa-solid fa-spinner animate-spin';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/create-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nominal,
+                        order_id: orderId || null,
+                        custom_name: memo,
+                        redirect_url: redirectUrl,
+                        webhook_url: webhookUrl
+                    })
+                });
+                const result = await res.json();
+
+                if (result.success && result.data) {
+                    // Save active payment to sessionStorage to prevent loss or duplicate on page refresh
+                    sessionStorage.setItem('yuripay_active_payment', JSON.stringify(result.data));
+
+                    if (openDirectly) {
+                        window.open(result.data.payment_url, '_blank');
+                    }
+                    showQRIS(result.data);
+                    refreshDashboardData();
+                } else {
+                    alert('Gagal membuat tagihan: ' + (result.message || 'Error server'));
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan koneksi: ' + err.message);
+            } finally {
+                icon.className = 'fa-solid fa-bolt';
+                btn.disabled = false;
+            }
+        }
+
+        function showQRIS(payment) {
+            currentPayment = payment;
+            isPaid = false;
+
+            document.getElementById('stage-input').classList.add('hidden');
+            document.getElementById('stage-success').classList.add('hidden');
+            document.getElementById('stage-qris').classList.remove('hidden');
+
+            document.getElementById('display-title').innerText = payment.custom_name;
+            document.getElementById('display-invoice').innerText = payment.payment_id;
+            document.getElementById('display-amount').innerText = formatRupiah(payment.amount);
+            document.getElementById('display-qr-img').src = payment.qr_image;
+
+            document.getElementById('display-payment-url').value = payment.payment_url;
+            document.getElementById('btn-open-payment-url').href = payment.payment_url;
+
+            startCountdown(new Date(payment.expires_at).getTime());
+            startPolling();
+        }
+
+        function copyPaymentUrl() {
+            const url = document.getElementById('display-payment-url').value;
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.getElementById('btn-copy-url-text');
+                btn.innerText = 'Tersalin!';
+                setTimeout(() => { btn.innerText = 'Salin'; }, 2000);
+            });
+        }
+
+        function startCountdown(expiresTime) {
+            if (countdownTimer) clearInterval(countdownTimer);
+
+            countdownTimer = setInterval(() => {
+                if (isPaid) {
+                    clearInterval(countdownTimer);
+                    return;
+                }
+                const now = Date.now();
+                const diff = Math.max(0, expiresTime - now);
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+
+                document.getElementById('display-countdown').innerText = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                if (diff <= 0) {
+                    clearInterval(countdownTimer);
+                    document.getElementById('display-countdown').innerText = 'EXPIRED';
+                    document.getElementById('status-text').innerText = 'Tagihan QRIS telah kedaluwarsa.';
+                    sessionStorage.removeItem('yuripay_active_payment');
+                }
+            }, 1000);
+        }
+
+        function startPolling() {
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(async () => {
+                if (isPaid || !currentPayment) {
+                    clearInterval(pollTimer);
+                    return;
+                }
+                await checkPaymentStatus(false);
+            }, 3000);
+        }
+
+        async function checkPaymentStatus(isManual = false) {
+            if (!currentPayment || isPaid) return;
+
+            const statusText = document.getElementById('status-text');
+            if (isManual) {
+                const btn = document.getElementById('btn-manual-check');
+                const icon = document.getElementById('check-icon');
+                icon.classList.add('animate-spin');
+                btn.disabled = true;
+            }
+
+            try {
+                const res = await fetch(`/api/check-payment/${currentPayment.payment_id}`);
+                const data = await res.json();
+
+                if (data.success && data.paid) {
+                    handlePaymentPaid(data.transaction);
+                } else if (isManual) {
+                    statusText.innerText = data.message || 'Pembayaran belum terdeteksi.';
+                }
+            } catch (e) {
+                console.warn('Polling check error:', e);
+            } finally {
+                if (isManual) {
+                    const btn = document.getElementById('btn-manual-check');
+                    const icon = document.getElementById('check-icon');
+                    icon.classList.remove('animate-spin');
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        function checkPaymentStatusNow() {
+            checkPaymentStatus(true);
+        }
+
+        function handlePaymentPaid(tx) {
+            isPaid = true;
+            if (pollTimer) clearInterval(pollTimer);
+            if (countdownTimer) clearInterval(countdownTimer);
+            sessionStorage.removeItem('yuripay_active_payment');
+
+            // 1. Play cute arigato sound only (no Google TTS)
+            playCuteSound();
+
+            // 2. Confetti celebration
+            launchConfetti();
+
+            // 3. Cute Marin Kitagawa Thank You Pop-up
+            showAnimePopup(currentPayment.amount);
+
+            // 4. Transition Background UI to Success Screen
+            document.getElementById('stage-qris').classList.add('hidden');
+            document.getElementById('stage-success').classList.remove('hidden');
+
+            document.getElementById('success-nominal').innerText = formatRupiah(currentPayment.amount);
+
+            const detailsBox = document.getElementById('success-details');
+            detailsBox.innerHTML = `
+                <div><span class="text-slate-400">ID Tagihan:</span> ${currentPayment.payment_id}</div>
+                <div><span class="text-slate-400">ID Transaksi GoPay:</span> ${tx?.transaction_id || '-'}</div>
+                <div><span class="text-slate-400">Penyedia:</span> ${tx?.payer_issuer || 'GoPay / QRIS'}</div>
+                <div><span class="text-slate-400">Waktu:</span> ${tx?.transaction_time || new Date().toLocaleTimeString()}</div>
+            `;
+
+            refreshDashboardData();
+            fetchRecentMutations();
+            fetchWebhookLogs();
+        }
+
+        function cancelTransaction() {
+            if (confirm('Batalkan tagihan ini dan kembali ke menu kasir?')) {
+                resetToInput();
+            }
+        }
+
+        function resetToInput() {
+            isPaid = false;
+            currentPayment = null;
+            if (pollTimer) clearInterval(pollTimer);
+            if (countdownTimer) clearInterval(countdownTimer);
+            sessionStorage.removeItem('yuripay_active_payment');
+
+            closeAnimeModal();
+
+            document.getElementById('stage-qris').classList.add('hidden');
+            document.getElementById('stage-success').classList.add('hidden');
+            document.getElementById('stage-input').classList.remove('hidden');
+
+            document.getElementById('input-nominal').value = '';
+            document.getElementById('input-order-id').value = '';
+            document.getElementById('input-memo').value = '';
+            document.getElementById('input-nominal').focus();
+        }
+
+        // Fetch recent mutations
+        async function fetchRecentMutations() {
+            const listEl = document.getElementById('mutations-list');
+            try {
+                const res = await fetch('/api/recent-mutations');
+                const data = await res.json();
+
+                if (data.success && data.mutations && data.mutations.length > 0) {
+                    listEl.innerHTML = data.mutations.map(tx => `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder">
+                            <div>
+                                <p class="font-bold text-slate-800 dark:text-slate-200">${formatRupiah(tx.amount)}</p>
+                                <p class="text-[10px] text-slate-400 font-mono">${tx.issuer} • ${tx.id.substring(0, 16)}...</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-googleGreen dark:text-emerald-400">
+                                ${tx.status}
+                            </span>
+                        </div>
+                    `).join('');
+                } else {
+                    listEl.innerHTML = '<p class="text-slate-400 text-center py-4 text-xs">Belum ada mutasi GoPay baru hari ini.</p>';
+                }
+            } catch (e) {
+                listEl.innerHTML = '<p class="text-rose-400 text-center py-4 text-xs">Gagal memuat mutasi GoPay.</p>';
+            }
+        }
+
+        // Fetch recent webhook delivery logs
+        async function fetchWebhookLogs() {
+            const listEl = document.getElementById('webhook-logs-list');
+            try {
+                const res = await fetch('/api/webhook-logs');
+                const data = await res.json();
+
+                if (data.success && data.logs && data.logs.length > 0) {
+                    listEl.innerHTML = data.logs.map(log => `
+                        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder flex items-center justify-between">
+                            <div class="truncate max-w-[210px]">
+                                <p class="font-mono font-bold text-slate-800 dark:text-slate-200">${log.order_id}</p>
+                                <p class="text-[10px] text-slate-400 truncate">${log.webhook_url}</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${log.status === 'SUCCESS' ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400'}">
+                                HTTP ${log.status_code || 500}
+                            </span>
+                        </div>
+                    `).join('');
+                } else {
+                    listEl.innerHTML = '<p class="text-slate-400 text-center py-3 text-xs">Belum ada webhook yang dikirim.</p>';
+                }
+            } catch (e) {
+                listEl.innerHTML = '<p class="text-rose-400 text-center py-3 text-xs">Gagal memuat log webhook.</p>';
+            }
+        }
+
+        // Refresh transactions table and stats
+        async function refreshDashboardData() {
+            try {
+                const res = await fetch('/api/dashboard-data');
+                const data = await res.json();
+                if (data.success) {
+                    if (data.stats) {
+                        document.getElementById('stat-volume').innerText = formatRupiah(data.stats.todayVolume);
+                        document.getElementById('stat-success').innerText = `${data.stats.todaySuccess} / ${data.stats.todayTotal}`;
+                    }
+                    if (data.recent && data.recent.length > 0) {
+                        const tbody = document.getElementById('transactions-table-body');
+                        tbody.innerHTML = data.recent.map(item => `
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                                <td class="py-2.5 font-mono font-bold text-googleBlue dark:text-sky-400">
+                                    ${item.id}
+                                    ${item.order_id && item.order_id !== item.id ? `<span class="block text-[10px] text-slate-400 font-mono font-normal">${item.order_id}</span>` : ''}
+                                </td>
+                                <td class="py-2.5 text-slate-600 dark:text-slate-300 max-w-[130px] truncate">${item.custom_name}</td>
+                                <td class="py-2.5 font-mono font-bold">${formatRupiah(item.total_amount)}</td>
+                                <td class="py-2.5">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.status === 'PAID' ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400' : (item.status === 'PENDING' ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500')}">
+                                        ${item.status}
+                                    </span>
+                                </td>
+                                <td class="py-2.5 text-right">
+                                    <a href="${baseUrl}/pay/${item.id}" target="_blank" 
+                                       class="text-[11px] text-googleBlue dark:text-sky-400 hover:underline font-bold inline-flex items-center gap-1">
+                                        <span>Checkout</span>
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (e) {
+                console.warn('Dashboard data refresh error:', e);
+            }
+        }
+
+        // API Modal helpers
+        function openApiModal() {
+            document.getElementById('api-modal').classList.remove('hidden');
+        }
+
+        function closeApiModal() {
+            document.getElementById('api-modal').classList.add('hidden');
+        }
+
+        function setApiTab(tab) {
+            ['curl', 'node', 'php', 'python'].forEach(t => {
+                document.getElementById('code-' + t).classList.add('hidden');
+                const tabBtn = document.getElementById('tab-' + t);
+                tabBtn.className = 'font-bold px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px]';
+            });
+            document.getElementById('code-' + tab).classList.remove('hidden');
+            const activeTab = document.getElementById('tab-' + tab);
+            activeTab.className = 'font-bold px-3 py-1 rounded-lg bg-googleBlue text-white text-[11px]';
+        }
+
+        // On Load: Restore active payment if user refreshed the page!
+        window.addEventListener('DOMContentLoaded', async () => {
+            fetchRecentMutations();
+            fetchWebhookLogs();
+
+            // AUTO-RESTORE ON REFRESH (ANTI-DUPLICATE PAYMENT)
+            const saved = sessionStorage.getItem('yuripay_active_payment');
+            if (saved) {
+                try {
+                    const p = JSON.parse(saved);
+                    if (p && p.payment_id) {
+                        const res = await fetch(`/api/check-payment/${p.payment_id}`);
+                        const data = await res.json();
+                        if (data.status === 'PENDING') {
+                            console.log('Restoring active pending QRIS on refresh:', p.payment_id);
+                            showQRIS(p);
+                        } else if (data.status === 'PAID') {
+                            currentPayment = p;
+                            handlePaymentPaid(data.transaction);
+                        } else {
+                            sessionStorage.removeItem('yuripay_active_payment');
+                        }
+                    }
+                } catch (e) {
+                    sessionStorage.removeItem('yuripay_active_payment');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

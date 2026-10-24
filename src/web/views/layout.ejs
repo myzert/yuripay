@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'GoPay Merchant' %> - Portal & API Gateway</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gopay: '#00AED6',
+                        gopayDark: '#0084A3',
+                        gopayGreen: '#00880C',
+                        darkBg: '#0B1120',
+                        cardBg: '#131D31'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 flex min-h-screen">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0">
+        <div>
+            <!-- GoPay Merchant Branding -->
+            <div class="p-6 border-b border-slate-800 flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#00AED6] to-[#00880C] flex items-center justify-center text-white shadow-lg shadow-cyan-500/30">
+                    <i class="fa-solid fa-qrcode text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base text-white tracking-wide flex items-center gap-1.5">
+                        <span>GoPay</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-bold border border-cyan-500/30">PARTNER</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">Merchant API Gateway</p>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="p-4 space-y-1.5">
+                <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Menu Utama</div>
+
+                <a href="/" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl transition font-medium hover:bg-slate-800/80 <%= typeof title !== 'undefined' && title === 'Merchant Dashboard Overview' ? 'bg-[#00AED6] text-white shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white' %>">
+                    <i class="fa-solid fa-chart-line w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="/qris" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl transition font-medium hover:bg-slate-800/80 <%= typeof title !== 'undefined' && title === 'Generate Dynamic QRIS' ? 'bg-[#00AED6] text-white shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white' %>">
+                    <i class="fa-solid fa-qrcode w-5 text-center"></i>
+                    <span>Cetak QRIS Dinamis</span>
+                </a>
+
+                <a href="/mutasi" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl transition font-medium hover:bg-slate-800/80 <%= typeof title !== 'undefined' && title === 'Mutasi Transaksi Real-Time' ? 'bg-[#00AED6] text-white shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white' %>">
+                    <i class="fa-solid fa-receipt w-5 text-center"></i>
+                    <span>Mutasi GoPay Live</span>
+                </a>
+
+                <div class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Toko & Stok Digital</div>
+
+                <a href="/products" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl transition font-medium hover:bg-slate-800/80 <%= typeof title !== 'undefined' && title === 'Katalog Produk & Game Keys' ? 'bg-[#00AED6] text-white shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white' %>">
+                    <i class="fa-solid fa-box-open w-5 text-center"></i>
+                    <span>Produk & Game</span>
+                </a>
+
+                <a href="/stocks" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl transition font-medium hover:bg-slate-800/80 <%= typeof title !== 'undefined' && title === 'Manajemen Stok & Kode Key' ? 'bg-[#00AED6] text-white shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white' %>">
+                    <i class="fa-solid fa-key w-5 text-center"></i>
+                    <span>Stok & Kode Key</span>
+                </a>
+
+                <a href="/transactions" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl transition font-medium hover:bg-slate-800/80 <%= typeof title !== 'undefined' && title === 'Riwayat Transaksi' ? 'bg-[#00AED6] text-white shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white' %>">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i>
+                    <span>Riwayat Pesanan</span>
+                </a>
+
+                <div class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Sistem & Sesi</div>
+
+                <a href="/gopay-login" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl transition font-medium hover:bg-slate-800/80 <%= typeof title !== 'undefined' && title === 'GoPay Merchant Login OTP' ? 'bg-[#00AED6] text-white shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white' %>">
+                    <i class="fa-solid fa-mobile-screen-button w-5 text-center"></i>
+                    <span>Login OTP GoBiz</span>
+                </a>
+
+                <a href="/settings" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl transition font-medium hover:bg-slate-800/80 <%= typeof title !== 'undefined' && title === 'Pengaturan Gateway & Merchant' ? 'bg-[#00AED6] text-white shadow-md shadow-cyan-500/30' : 'text-slate-400 hover:text-white' %>">
+                    <i class="fa-solid fa-sliders w-5 text-center"></i>
+                    <span>API & Pengaturan</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Outlet Profile & Logout -->
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-2xl">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div class="truncate max-w-[120px]">
+                        <p class="text-xs font-bold text-slate-200 truncate"><%= process.env.STORE_NAME || 'ZERO SHOP' %></p>
+                        <p class="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span> Sesi Aktif
+                        </p>
+                    </div>
+                </div>
+                <a href="/logout" title="Logout" class="text-slate-400 hover:text-rose-400 transition p-2">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <!-- Topbar -->
+        <header class="h-16 border-b border-slate-800 bg-slate-900/60 backdrop-blur px-8 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <h2 class="text-lg font-bold text-white"><%= typeof title !== 'undefined' ? title : 'Dashboard' %></h2>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="/qris" class="px-4 py-2 bg-[#00AED6] hover:bg-[#0084A3] text-white text-xs font-bold rounded-xl transition flex items-center gap-2 shadow-md shadow-cyan-500/30">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Buat QRIS Baru</span>
+                </a>
+                <a href="/mutasi" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Cek Mutasi</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Notification Message Banner -->
+        <% if (typeof msg !== 'undefined' && msg) { %>
+            <div class="mx-8 mt-6 p-4 rounded-2xl bg-cyan-950/80 border border-cyan-700/50 text-cyan-200 text-sm flex items-center justify-between shadow-lg">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-circle-check text-cyan-400 text-lg"></i>
+                    <span><%= msg %></span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-cyan-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        <% } %>
+
+        <!-- Dynamic Body Slot -->
+        <div class="p-8">
+            <%- body %>
+        </div>
+    </main>
+
+</body>
+</html>

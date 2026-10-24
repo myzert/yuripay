@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= payment ? 'Pembayaran ' + formatRupiah(payment.amount) : 'Pembayaran' %> - <%= storeName %> | <%= appName %></title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        googleBlue: '#1a73e8',
+                        googleBlueHover: '#1557b0',
+                        googleGreen: '#1e8e3e',
+                        googleSurface: '#ffffff',
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                        darkBorder: '#334155',
+                        darkText: '#f8fafc',
+                        darkSubtext: '#94a3b8'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+        .font-mono { font-family: 'Roboto Mono', monospace; }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .bounce-slow { animation: bounce-slow 2.5s infinite ease-in-out; }
+        @keyframes scale-in {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .scale-in { animation: scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="bg-[#f0f4f9] dark:bg-darkBg text-slate-800 dark:text-darkText min-h-screen flex flex-col justify-between transition-colors duration-200">
+
+    <!-- Header Navbar -->
+    <header class="bg-white dark:bg-darkCard border-b border-slate-200 dark:border-darkBorder px-6 py-3.5 sticky top-0 z-30 shadow-sm transition-colors duration-200">
+        <div class="max-w-xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-extrabold tracking-tight flex items-center gap-1.5 text-slate-900 dark:text-white">
+                        <span><%= storeName %></span>
+                        <span class="text-sky-500 text-xs" title="Official Verified Merchant">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </span>
+                    </h1>
+                    <p class="text-[11px] text-slate-500 dark:text-darkSubtext font-medium flex items-center gap-1">
+                        <span>Pembayaran Resmi QRIS</span>
+                        <span class="font-bold text-googleBlue dark:text-sky-400">• <%= appName %></span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Dark / Light Mode Switch -->
+            <button onclick="toggleDarkMode()" 
+                class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
+                title="Ganti Mode Tampilan">
+                <i id="theme-icon" class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Payment Container -->
+    <main class="max-w-md w-full mx-auto p-4 my-auto">
+
+        <% if (error || !payment) { %>
+            <!-- Error / Expired Card -->
+            <div class="bg-white dark:bg-darkCard rounded-[32px] p-8 shadow-xl border border-slate-200 dark:border-darkBorder text-center">
+                <div class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-4">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Tagihan Tidak Tersedia</h2>
+                <p class="text-xs text-slate-500 dark:text-darkSubtext mt-2 mb-6">
+                    <%= error || 'Tagihan QRIS tidak ditemukan atau telah kedaluwarsa.' %>
+                </p>
+                <p class="text-xs text-slate-400">Silakan hubungi admin toko <%= storeName %> untuk mendapatkan link pembayaran baru.</p>
+            </div>
+        <% } else { %>
+
+            <!-- Active Checkout Card -->
+            <div id="checkout-card" class="bg-white dark:bg-darkCard rounded-[32px] p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-darkBorder relative transition-colors duration-200">
+
+                <!-- STAGE 1: PENDING / WAITING PAYMENT -->
+                <div id="stage-waiting" class="<%= payment.status === 'PAID' ? 'hidden' : '' %>">
+                    <!-- Invoice Bar -->
+                    <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-darkBorder mb-4">
+                        <div class="text-left">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-darkSubtext">Pesanan</span>
+                            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate max-w-[210px]"><%= payment.custom_name %></h3>
+                        </div>
+                        <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-googleBlue dark:text-sky-400 border border-blue-200 dark:border-blue-900">
+                            <%= payment.payment_id %>
+                        </span>
+                    </div>
+
+                    <!-- Total Amount Display (Natural, Clean, No "Kode Unik" label) -->
+                    <div class="p-4 bg-gradient-to-b from-blue-50/60 to-slate-50/70 dark:from-slate-800/80 dark:to-slate-800/40 rounded-2xl border border-blue-100 dark:border-darkBorder text-center mb-4">
+                        <p class="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-darkSubtext">Total Pembayaran</p>
+                        <h2 class="text-3xl sm:text-4xl font-black font-mono text-googleBlue dark:text-sky-400 tracking-tight my-1">
+                            <%= formatRupiah(payment.amount) %>
+                        </h2>
+                        <!-- Copy Nominal Button -->
+                        <button type="button" onclick="copyAmount('<%= payment.amount %>')" 
+                            class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:text-googleBlue dark:hover:text-sky-400 bg-white dark:bg-darkCard px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm mt-1 transition">
+                            <i class="fa-regular fa-copy"></i>
+                            <span id="copy-text">Salin Nominal Tepat</span>
+                        </button>
+                    </div>
+
+                    <!-- Dynamic QRIS Box -->
+                    <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center my-4 relative group">
+                        <img id="qr-img" src="<%= payment.qr_image %>" alt="QRIS Code" class="w-60 h-60 object-contain rounded-xl">
+                        
+                        <!-- NMID and QRIS Badge -->
+                        <div class="mt-3 flex items-center justify-between w-full px-2 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                            <span class="flex items-center gap-1.5">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" class="h-4" alt="QRIS">
+                                <span class="text-[10px] text-slate-400">| NMID: ID1024341992468</span>
+                            </span>
+                            <a href="<%= payment.qr_image %>" download="QRIS-<%= payment.payment_id %>.png" 
+                               class="text-googleBlue dark:text-sky-400 hover:underline flex items-center gap-1 text-[11px]">
+                                <i class="fa-solid fa-download"></i> Unduh QR
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Countdown Timer -->
+                    <div class="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-darkBorder text-xs mb-4">
+                        <span class="text-slate-500 dark:text-darkSubtext flex items-center gap-1.5 font-medium">
+                            <i class="fa-regular fa-clock text-googleBlue dark:text-sky-400"></i>
+                            <span>Batas Waktu Bayar:</span>
+                        </span>
+                        <span id="countdown-timer" class="font-mono font-bold text-googleBlue dark:text-sky-400 text-sm">10:00</span>
+                    </div>
+
+                    <!-- Live Polling Status Indicator -->
+                    <div class="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-darkSubtext mb-5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-googleBlue dark:bg-sky-400 animate-ping inline-block"></span>
+                        <span id="status-label" class="font-medium">Mengecek pembayaran secara otomatis...</span>
+                    </div>
+
+                    <!-- Manual Check Button -->
+                    <button type="button" id="btn-check-manual" onclick="checkStatusManual()"
+                        class="w-full py-4 bg-googleBlue hover:bg-googleBlueHover dark:bg-sky-600 dark:hover:bg-sky-500 text-white font-bold rounded-2xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-rotate" id="check-icon"></i>
+                        <span>Saya Sudah Bayar (Cek Sekarang)</span>
+                    </button>
+
+                    <!-- Supported E-Wallets & Banks -->
+                    <div class="mt-6 pt-5 border-t border-slate-100 dark:border-darkBorder text-center">
+                        <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider mb-2.5">
+                            Bisa Dibayar Melalui:
+                        </p>
+                        <div class="flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">GoPay</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">DANA</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">OVO</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">ShopeePay</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">BCA Mobile</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Livin' Mandiri</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">BRImo</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Semua QRIS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 2: SUCCESS VIEW -->
+                <div id="stage-success" class="<%= payment.status === 'PAID' ? '' : 'hidden' %> text-center py-4">
+                    <div class="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-googleGreen dark:text-emerald-400 flex items-center justify-center text-4xl mx-auto mb-4">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+
+                    <span class="px-3.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-googleGreen dark:text-emerald-400 font-bold text-xs">
+                        LUNAS • TERVERIFIKASI
+                    </span>
+
+                    <h2 class="text-2xl font-black text-slate-900 dark:text-white mt-3">Pembayaran Berhasil!</h2>
+                    <p class="text-3xl font-black font-mono text-googleGreen dark:text-emerald-400 my-2">
+                        <%= formatRupiah(payment.amount) %>
+                    </p>
+                    <p class="text-xs text-slate-500 dark:text-darkSubtext">
+                        Terima kasih atas pembelian Anda di <%= storeName %>.
+                    </p>
+
+                    <!-- Receipt Details Box -->
+                    <div id="receipt-details" class="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-darkBorder my-5 text-left text-xs font-mono space-y-1.5 text-slate-700 dark:text-slate-300">
+                        <div><span class="text-slate-400">ID Tagihan:</span> <%= payment.payment_id %></div>
+                        <div><span class="text-slate-400">Pesanan:</span> <%= payment.custom_name %></div>
+                        <div><span class="text-slate-400">Metode:</span> QRIS Realtime Settlement</div>
+                        <div id="receipt-time"><span class="text-slate-400">Waktu:</span> <%= payment.paid_at ? new Date(payment.paid_at).toLocaleString('id-ID') : (payment.status === 'PAID' ? new Date().toLocaleTimeString('id-ID') : '-') %></div>
+                    </div>
+
+                    <% if (payment.redirect_url) { %>
+                        <div class="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900 mb-4 text-xs text-googleBlue dark:text-sky-300 font-medium">
+                            <i class="fa-solid fa-spinner animate-spin mr-1"></i>
+                            <span>Mengalihkan otomatis ke toko dalam </span>
+                            <span id="redirect-countdown" class="font-bold font-mono text-sm text-googleBlue dark:text-sky-400">5</span>
+                            <span> detik...</span>
+                        </div>
+                        <a id="btn-redirect-now" href="<%= payment.redirect_url %>" 
+                           class="w-full py-4 bg-googleBlue hover:bg-googleBlueHover dark:bg-sky-600 dark:hover:bg-sky-500 text-white font-bold rounded-2xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm">
+                            <span>Kembali ke Toko Sekarang (OP Redirect)</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    <% } else { %>
+                        <button type="button" onclick="window.print()" 
+                            class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-2xl transition border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-print"></i>
+                            <span>Cetak Bukti Pembayaran</span>
+                        </button>
+                    <% } %>
+                </div>
+
+            </div>
+        <% } %>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-400 dark:text-darkSubtext">
+        &copy; 2026 <%= appName %> • Secure QRIS Checkout for <%= storeName %>
+    </footer>
+
+
+    <!-- ============================================== -->
+    <!-- CUTE MARIN KITAGAWA THANK YOU POP-UP MODAL     -->
+    <!-- ============================================== -->
+    <div id="anime-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md hidden transition-all duration-300">
+        <div class="bg-white dark:bg-darkCard rounded-[36px] max-w-sm w-full p-6 text-center shadow-2xl border-2 border-pink-300 dark:border-pink-500/40 relative overflow-hidden scale-in">
+            <!-- Background Soft Glow -->
+            <div class="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-pink-200/50 dark:bg-pink-600/20 blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-16 -left-16 w-36 h-36 rounded-full bg-blue-200/50 dark:bg-blue-600/20 blur-2xl pointer-events-none"></div>
+
+            <!-- Cute Marin Kitagawa Thank You Image -->
+            <div class="relative mb-4">
+                <img src="/images/thank-you.webp" 
+                     onerror="this.onerror=null; this.src='https://gifdb.com/images/high/marin-kitagawa-thank-you-anime-cute-smile-usr1oj8xvh9j7of9.webp';" 
+                     alt="Marin Kitagawa Thank You" 
+                     class="w-56 h-56 mx-auto object-cover rounded-3xl shadow-lg border-2 border-pink-300 dark:border-pink-400 bounce-slow">
+                <div class="absolute -bottom-3 right-8 bg-pink-500 text-white text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md border-2 border-white dark:border-darkCard flex items-center gap-1">
+                    <span>Arigatou!</span>
+                    <i class="fa-solid fa-heart text-[10px]"></i>
+                </div>
+            </div>
+
+            <!-- Heading & Japanese Thank You -->
+            <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-2">Arigatou Gozaimasu! ✨</h3>
+            <p class="text-xs text-slate-500 dark:text-darkSubtext mt-1">
+                Terima kasih banyak atas pembeliannya di <span class="font-bold text-googleBlue dark:text-sky-400"><%= storeName %></span>!
+            </p>
+
+            <!-- Amount Badge -->
+            <div class="my-4 p-3.5 bg-gradient-to-r from-pink-50 via-slate-50 to-blue-50 dark:from-pink-950/30 dark:via-slate-800 dark:to-blue-950/30 rounded-2xl border border-pink-200/80 dark:border-pink-800/40">
+                <p class="text-[11px] uppercase tracking-wider font-bold text-pink-600 dark:text-pink-400">Pembayaran Berhasil Diterima</p>
+                <h4 class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    <%= payment ? formatRupiah(payment.amount) : '' %>
+                </h4>
+            </div>
+
+            <!-- Action Button -->
+            <button type="button" onclick="closeAnimeModal()"
+                class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-extrabold rounded-2xl transition shadow-lg shadow-pink-500/30 flex items-center justify-center gap-2 text-sm">
+                <span>Sama-Sama! Lanjutkan</span>
+                <i class="fa-solid fa-heart"></i>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Client Logic & Soundbox Script -->
+    <script>
+        <% if (payment) { %>
+        const paymentId = '<%= payment.payment_id %>';
+        const totalAmount = <%= payment.amount %>;
+        const expiresAt = new Date('<%= payment.expires_at %>').getTime();
+        const redirectUrl = <%= payment.redirect_url ? JSON.stringify(payment.redirect_url) : 'null' %>;
+        <% } else { %>
+        const paymentId = null;
+        <% } %>
+
+        let isPaid = <%= payment && payment.status === 'PAID' ? 'true' : 'false' %>;
+        let pollTimer = null;
+        let countdownTimer = null;
+
+        // Dark Mode Logic
+        function initTheme() {
+            const savedTheme = localStorage.getItem('yuripay_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').className = 'fa-solid fa-sun';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon').className = 'fa-solid fa-moon';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('yuripay_theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        initTheme();
+
+        // Audio files
+        const arigatoLocal = new Audio('/sounds/cute-arigato.mp3');
+        const arigatoOnline = new Audio('https://www.myinstants.com/media/sounds/cute-arigato.mp3');
+
+        // Play Cute Arigato Sound Only
+        function playCuteSound() {
+            arigatoLocal.currentTime = 0;
+            arigatoLocal.play().catch(() => {
+                arigatoOnline.currentTime = 0;
+                arigatoOnline.play().catch(e => console.warn('Audio play:', e));
+            });
+        }
+
+        function launchConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 90,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        let finalRedirectUrl = redirectUrl;
+
+        function buildOpRedirectUrl(targetUrl, paymentId, orderId, amount, tx) {
+            try {
+                const urlObj = new URL(targetUrl);
+                urlObj.searchParams.set('order_id', orderId || paymentId);
+                urlObj.searchParams.set('status_code', '200');
+                urlObj.searchParams.set('transaction_status', 'settlement');
+                urlObj.searchParams.set('payment_type', 'qris');
+                urlObj.searchParams.set('gross_amount', Number(amount).toFixed(2));
+                urlObj.searchParams.set('payment_id', paymentId);
+                if (tx?.transaction_id) {
+                    urlObj.searchParams.set('transaction_id', tx.transaction_id);
+                }
+                return urlObj.toString();
+            } catch (e) {
+                const sep = targetUrl.includes('?') ? '&' : '?';
+                return `${targetUrl}${sep}order_id=${encodeURIComponent(orderId || paymentId)}&status_code=200&transaction_status=settlement&gross_amount=${Number(amount).toFixed(2)}&payment_id=${paymentId}`;
+            }
+        }
+
+        function showAnimeModal() {
+            document.getElementById('anime-modal').classList.remove('hidden');
+        }
+
+        function closeAnimeModal() {
+            document.getElementById('anime-modal').classList.add('hidden');
+            if (finalRedirectUrl) {
+                window.location.href = finalRedirectUrl;
+            }
+        }
+
+        function copyAmount(val) {
+            navigator.clipboard.writeText(val).then(() => {
+                const label = document.getElementById('copy-text');
+                const orig = label.innerText;
+                label.innerText = 'Tersalin!';
+                setTimeout(() => { label.innerText = orig; }, 2000);
+            });
+        }
+
+        // Countdown timer
+        function startCountdown() {
+            if (!paymentId || isPaid) return;
+            const timerEl = document.getElementById('countdown-timer');
+
+            countdownTimer = setInterval(() => {
+                if (isPaid) {
+                    clearInterval(countdownTimer);
+                    return;
+                }
+                const now = Date.now();
+                const diff = Math.max(0, expiresAt - now);
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+
+                if (timerEl) {
+                    timerEl.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+
+                if (diff <= 0) {
+                    clearInterval(countdownTimer);
+                    if (timerEl) timerEl.innerText = 'EXPIRED';
+                    document.getElementById('status-label').innerText = 'Waktu pembayaran telah habis.';
+                }
+            }, 1000);
+        }
+
+        // Auto polling every 2.5s
+        function startPolling() {
+            if (!paymentId || isPaid) return;
+            pollTimer = setInterval(async () => {
+                if (isPaid) {
+                    clearInterval(pollTimer);
+                    return;
+                }
+                await checkStatus(false);
+            }, 2500);
+        }
+
+        async function checkStatus(isManual = false) {
+            if (!paymentId || isPaid) return;
+
+            const icon = document.getElementById('check-icon');
+            const btn = document.getElementById('btn-check-manual');
+            const statusLabel = document.getElementById('status-label');
+
+            if (isManual) {
+                if (icon) icon.classList.add('animate-spin');
+                if (btn) btn.disabled = true;
+            }
+
+            try {
+                const res = await fetch(`/api/payment-status/${paymentId}`);
+                const data = await res.json();
+
+                if (data.success && data.paid) {
+                    handleSuccess(data);
+                } else if (isManual) {
+                    statusLabel.innerText = data.message || 'Pembayaran belum terdeteksi. Silakan coba beberapa detik lagi.';
+                }
+            } catch (err) {
+                console.warn('Status poll error:', err);
+            } finally {
+                if (isManual) {
+                    if (icon) icon.classList.remove('animate-spin');
+                    if (btn) btn.disabled = false;
+                }
+            }
+        }
+
+        function checkStatusManual() {
+            checkStatus(true);
+        }
+
+        // Handle Payment Confirmed
+        function handleSuccess(data) {
+            isPaid = true;
+            if (pollTimer) clearInterval(pollTimer);
+            if (countdownTimer) clearInterval(countdownTimer);
+
+            // 1. Play cute arigato sound only (no Google TTS)
+            playCuteSound();
+
+            // 2. Confetti party
+            launchConfetti();
+
+            // 3. Anime pop-up
+            showAnimeModal();
+
+            // 4. Switch UI Card to Success View
+            document.getElementById('stage-waiting').classList.add('hidden');
+            document.getElementById('stage-success').classList.remove('hidden');
+
+            const timeEl = document.getElementById('receipt-time');
+            if (timeEl) {
+                timeEl.innerHTML = `<span class="text-slate-400">Waktu:</span> ${new Date().toLocaleTimeString('id-ID')}`;
+            }
+
+            // 5. Automatic OP redirect countdown if redirect_url exists
+            if (redirectUrl) {
+                finalRedirectUrl = buildOpRedirectUrl(redirectUrl, paymentId, '<%= payment ? payment.order_id : "" %>', totalAmount, data.transaction);
+                const btnRedirect = document.getElementById('btn-redirect-now');
+                if (btnRedirect) btnRedirect.href = finalRedirectUrl;
+
+                let secLeft = 5;
+                const rEl = document.getElementById('redirect-countdown');
+                const rInterval = setInterval(() => {
+                    secLeft--;
+                    if (rEl) rEl.innerText = secLeft;
+                    if (secLeft <= 0) {
+                        clearInterval(rInterval);
+                        window.location.href = finalRedirectUrl;
+                    }
+                }, 1000);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (paymentId && !isPaid) {
+                startCountdown();
+                startPolling();
+            } else if (paymentId && isPaid) {
+                // Ensure UI cleanly shows success and hides waiting stage
+                const waitingEl = document.getElementById('stage-waiting');
+                const successEl = document.getElementById('stage-success');
+                if (waitingEl) waitingEl.classList.add('hidden');
+                if (successEl) successEl.classList.remove('hidden');
+
+                if (redirectUrl) {
+                    finalRedirectUrl = buildOpRedirectUrl(redirectUrl, paymentId, '<%= payment ? payment.order_id : "" %>', totalAmount);
+                    const btnRedirect = document.getElementById('btn-redirect-now');
+                    if (btnRedirect) btnRedirect.href = finalRedirectUrl;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

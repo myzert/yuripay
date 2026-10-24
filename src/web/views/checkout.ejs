@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran QRIS - <%= qris.customName %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+
+        <!-- Header -->
+        <div class="text-center pb-5 border-b border-slate-800">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs font-bold mb-2">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>QRIS GO-PAY DINAMIS</span>
+            </div>
+            <h1 class="text-lg font-extrabold text-white"><%= qris.customName %></h1>
+            <p class="text-xs text-slate-400 mt-0.5">ID: <code class="font-mono text-cyan-400"><%= qris.trxId %></code></p>
+        </div>
+
+        <!-- Payment Amount Section -->
+        <div class="my-5 p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center">
+            <p class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Total Pembayaran</p>
+            <h2 class="text-3xl font-black text-emerald-400 mt-1 font-mono tracking-tight">
+                <%= formatRupiah(qris.amount) %>
+            </h2>
+            <% if (qris.uniqueCode) { %>
+                <p class="text-[11px] text-amber-400 mt-1 font-medium">
+                    ⚠️ Termasuk kode unik <span class="font-bold">+Rp <%= qris.uniqueCode %></span> untuk validasi otomatis.
+                </p>
+            <% } %>
+        </div>
+
+        <!-- QR Code Container -->
+        <div id="qr-container" class="bg-white p-5 rounded-2xl shadow-inner text-center my-4 flex flex-col items-center justify-center">
+            <img src="<%= qrBase64 %>" alt="QRIS Code" class="w-64 h-64 object-contain rounded-xl">
+            <div class="mt-3 flex items-center gap-2 text-slate-700 text-xs font-bold">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" class="h-4" alt="QRIS">
+                <span>NMID: ID1024341992468</span>
+            </div>
+        </div>
+
+        <!-- Success Container (Hidden initially) -->
+        <div id="success-container" class="hidden p-8 text-center my-4 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-3">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Pembayaran Sukses!</h3>
+            <p class="text-xs text-slate-300 mt-1">Transaksi Anda telah terverifikasi lunas di server GoPay.</p>
+            <div id="tx-details" class="mt-4 text-xs font-mono text-emerald-400 bg-slate-950 p-3 rounded-xl border border-emerald-900/50"></div>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div id="timer-box" class="flex items-center justify-between px-4 py-2.5 bg-slate-950/80 rounded-xl border border-slate-800 text-xs">
+            <span class="text-slate-400 flex items-center gap-1.5">
+                <i class="fa-regular fa-clock text-cyan-400"></i>
+                <span>Sisa Waktu Pembayaran:</span>
+            </span>
+            <span id="countdown" class="font-mono font-bold text-cyan-400 text-sm">10:00</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-5 space-y-2.5">
+            <button id="btn-check" onclick="checkStatusManual()"
+                class="w-full py-3 bg-[#00AED6] hover:bg-[#0084A3] text-white font-bold rounded-xl transition shadow-md shadow-cyan-500/30 flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-rotate" id="check-icon"></i>
+                <span>Cek Status Pembayaran</span>
+            </button>
+            <p class="text-[11px] text-center text-slate-500">
+                Pindai menggunakan aplikasi e-wallet apa saja (GoPay, BCA, Mandiri, Dana, OVO, ShopeePay, dll).
+            </p>
+        </div>
+
+        <div class="mt-6 text-center text-[10px] text-slate-600">
+            Powered by GoPay Merchant Dynamic Gateway (EMVCo CRC16)
+        </div>
+    </div>
+
+    <script>
+        const qrisId = '<%= qris.id %>';
+        const expiresAt = new Date('<%= qris.expiresAt.toISOString() %>').getTime();
+        let isPaid = false;
+
+        // Countdown timer
+        const timerInterval = setInterval(() => {
+            if (isPaid) {
+                clearInterval(timerInterval);
+                return;
+            }
+            const now = Date.now();
+            const diff = Math.max(0, expiresAt - now);
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+
+            document.getElementById('countdown').innerText = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            if (diff <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('countdown').innerText = 'EXPIRED';
+                document.getElementById('timer-box').classList.add('border-rose-800', 'text-rose-400');
+            }
+        }, 1000);
+
+        // Auto polling every 5 seconds
+        const pollInterval = setInterval(async () => {
+            if (isPaid) {
+                clearInterval(pollInterval);
+                return;
+            }
+            await checkStatus();
+        }, 5000);
+
+        async function checkStatus() {
+            try {
+                const res = await fetch(`/api/qr-status/${qrisId}`);
+                const data = await res.json();
+                if (data.success && data.paid) {
+                    showSuccess(data.transaction);
+                }
+            } catch (e) {}
+        }
+
+        async function checkStatusManual() {
+            const btn = document.getElementById('btn-check');
+            const icon = document.getElementById('check-icon');
+            icon.classList.add('animate-spin');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/qr-status/${qrisId}`);
+                const data = await res.json();
+                if (data.success && data.paid) {
+                    showSuccess(data.transaction);
+                } else {
+                    alert('Pembayaran belum terdeteksi. Silakan selesaikan transfer lalu klik cek kembali.');
+                }
+            } catch (e) {
+                alert('Gagal mengecek status pembayaran.');
+            } finally {
+                icon.classList.remove('animate-spin');
+                btn.disabled = false;
+            }
+        }
+
+        function showSuccess(tx) {
+            isPaid = true;
+            clearInterval(pollInterval);
+            clearInterval(timerInterval);
+
+            document.getElementById('qr-container').classList.add('hidden');
+            document.getElementById('timer-box').classList.add('hidden');
+            document.getElementById('btn-check').classList.add('hidden');
+
+            const successBox = document.getElementById('success-container');
+            successBox.classList.remove('hidden');
+
+            if (tx) {
+                document.getElementById('tx-details').innerHTML = `
+                    <p><b>ID Transaksi:</b> ${tx.transaction_id || '-'}</p>
+                    <p><b>Issuer:</b> ${tx.payer_issuer || 'GoPay'}</p>
+                    <p><b>Waktu:</b> ${tx.transaction_time || new Date().toLocaleString()}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

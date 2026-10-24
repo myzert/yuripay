@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment Variables & Secrets (CRITICAL)
+.env
+.env.*
+!.env.example
+.GOPAY_SESI_JANGAN_DIHAPUS.json
+**/.GOPAY_SESI_JANGAN_DIHAPUS.json
+
+# Database & SQLite files
+/database/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+
+# Logs & temp
+*.log
+npm-debug.log*
+
+# Submodules or separate clones
+gateway-service/

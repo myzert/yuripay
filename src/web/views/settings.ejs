@@ -1,0 +1,124 @@
+<div class="space-y-8 max-w-4xl">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-white">Pengaturan Gateway & Dokumentasi API</h3>
+            <p class="text-xs text-slate-400 mt-1">Konfigurasi merchant, API key, dan dokumentasi integrasi backend</p>
+        </div>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-2xl <%= isGatewayLive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400' %> flex items-center justify-center text-xl">
+                <i class="fa-solid fa-server"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-white text-base">Status Sesi GoPay Merchant</h4>
+                <p class="text-xs text-slate-400 mt-0.5">
+                    <%= isGatewayLive ? 'Sesi token aktif & background auto-refresh berjalan normal.' : 'Sesi belum dikonfigurasi. Silakan login pada menu Login OTP.' %>
+                </p>
+            </div>
+        </div>
+        <span class="px-3 py-1 rounded-full text-xs font-bold <%= isGatewayLive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20' %>">
+            <%= isGatewayLive ? 'SESI AKTIF' : 'BELUM LOGIN' %>
+        </span>
+    </div>
+
+    <!-- Settings Form -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
+        <form action="/settings/save" method="POST" class="space-y-6">
+
+            <div>
+                <h4 class="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-key"></i>
+                    <span>Kredensial API Gateway</span>
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Gateway API Key</label>
+                        <input type="text" name="api_key" value="<%= apiKey %>" placeholder="Secret API Key"
+                            class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-cyan-500">
+                        <p class="text-[11px] text-slate-500 mt-1">Kunci rahasia untuk memproteksi endpoint API publik</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Toko ID / Merchant ID</label>
+                        <input type="text" name="merchant_id" value="<%= merchantId %>" placeholder="G538138242"
+                            class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-cyan-500">
+                        <p class="text-[11px] text-slate-500 mt-1">ID merchant GoPay Anda (contoh: G538138242)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QRIS Static -->
+            <div class="pt-4 border-t border-slate-800">
+                <h4 class="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>Template QRIS Statis Merchant (EMVCo)</span>
+                </h4>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">String Kode QRIS Statis</label>
+                    <textarea name="qris_static" rows="3" placeholder="000201010211..."
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-500"><%= qrisStatic %></textarea>
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        String QRIS statis dari aplikasi GoBiz. Diubah otomatis menjadi QRIS Dinamis (EMVCo tag 54 + CRC16).
+                    </p>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-800 flex justify-end">
+                <button type="submit"
+                    class="px-6 py-3 bg-[#00AED6] hover:bg-[#0084A3] text-white font-semibold rounded-xl transition shadow-lg shadow-cyan-500/30 flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Simpan Pengaturan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- API Integration Documentation -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl space-y-6">
+        <h4 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-book-bookmark text-cyan-400"></i>
+            <span>Dokumentasi API Gateway (Untuk Website / Bot Eksternal)</span>
+        </h4>
+
+        <!-- Endpoint 1: Create QRIS -->
+        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+            <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-500/20 text-indigo-400">POST</span>
+                <code class="text-xs font-mono text-white">/api/create-qris</code>
+            </div>
+            <p class="text-xs text-slate-400">Membuat QRIS dinamis baru dengan nominal tertentu.</p>
+            <pre class="bg-slate-900 p-3 rounded-xl text-[11px] text-cyan-300 font-mono overflow-x-auto">curl -X POST http://localhost:3000/api/create-qris \
+  -H "x-api-key: <%= apiKey %>" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 15000}'</pre>
+        </div>
+
+        <!-- Endpoint 2: Check Payment -->
+        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+            <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-400">POST</span>
+                <code class="text-xs font-mono text-white">/api/check-payment</code>
+            </div>
+            <p class="text-xs text-slate-400">Memeriksa mutasi pembayaran GoPay untuk nominal tertentu.</p>
+            <pre class="bg-slate-900 p-3 rounded-xl text-[11px] text-cyan-300 font-mono overflow-x-auto">curl -X POST http://localhost:3000/api/check-payment \
+  -H "x-api-key: <%= apiKey %>" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 15000, "trx_id": "TRX-12345"}'</pre>
+        </div>
+
+        <!-- Endpoint 3: Public QR Status -->
+        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
+            <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-400">GET</span>
+                <code class="text-xs font-mono text-white">/api/qr-status/:id</code>
+            </div>
+            <p class="text-xs text-slate-400">Endpoint publik untuk polling status checkout frontend tanpa butuh API key.</p>
+        </div>
+    </div>
+
+</div>

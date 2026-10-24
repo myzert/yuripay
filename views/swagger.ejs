@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swagger API Docs - <%= appName %> by <%= storeName %></title>
+    <!-- Swagger UI CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            background: #fafafa;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        }
+        .topbar-brand {
+            background: #1a73e8;
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .topbar-brand h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .topbar-brand a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 14px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .topbar-brand a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        #swagger-ui {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .swagger-ui .topbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <header class="topbar-brand">
+        <h1>
+            <i class="fa-solid fa-bolt"></i>
+            <span><%= appName %> • <%= storeName %> API Documentation (Swagger)</span>
+        </h1>
+        <div style="display: flex; gap: 8px;">
+            <a href="/swagger.json" target="_blank" download="swagger.json">
+                <i class="fa-solid fa-download"></i>
+                <span>Unduh swagger.json</span>
+            </a>
+            <a href="/">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Kembali ke Dashboard</span>
+            </a>
+        </div>
+    </header>
+
+    <div id="swagger-ui"></div>
+
+    <!-- Swagger UI JS Bundle -->
+    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function() {
+            window.ui = SwaggerUIBundle({
+                url: "/swagger.json",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "BaseLayout"
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<div class="space-y-8">
+
+    <!-- Header Actions -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-white">Daftar Produk & Kategori</h3>
+            <p class="text-xs text-slate-400 mt-1">Kelola katalog produk digital, harga, dan kategori</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="document.getElementById('modal-add-category').classList.remove('hidden')"
+                class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold rounded-xl transition border border-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-folder-plus text-indigo-400"></i>
+                <span>Tambah Kategori</span>
+            </button>
+            <button onclick="document.getElementById('modal-add-product').classList.remove('hidden')"
+                class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i>
+                <span>Tambah Produk</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Category Badges -->
+    <div class="flex flex-wrap gap-2.5">
+        <% categories.forEach(cat => { %>
+            <div class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-2xl flex items-center gap-3">
+                <span class="text-lg"><%= cat.emoji || '📦' %></span>
+                <span class="text-sm font-semibold text-slate-200"><%= cat.name %></span>
+                <form action="/categories/delete/<%= cat.id %>" method="POST" onsubmit="return confirm('Hapus kategori ini?')" class="inline">
+                    <button type="submit" class="text-slate-500 hover:text-rose-400 text-xs transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+            </div>
+        <% }) %>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wider text-slate-400 bg-slate-950/60 border-b border-slate-800">
+                        <th class="p-4">Produk</th>
+                        <th class="p-4">Kategori</th>
+                        <th class="p-4">Harga</th>
+                        <th class="p-4">Stok Siap Jual</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    <% if (products.length === 0) { %>
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-500">Belum ada produk. Klik "Tambah Produk" untuk mulai menjual.</td>
+                        </tr>
+                    <% } %>
+                    <% products.forEach(p => { %>
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="p-4 flex items-center space-x-3">
+                                <% if (p.image_url) { %>
+                                    <img src="<%= p.image_url %>" class="w-10 h-10 rounded-xl object-cover bg-slate-800">
+                                <% } else { %>
+                                    <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400">
+                                        <i class="fa-solid fa-box"></i>
+                                    </div>
+                                <% } %>
+                                <div>
+                                    <p class="font-bold text-white"><%= p.name %></p>
+                                    <p class="text-xs text-slate-400 truncate max-w-xs"><%= p.description || 'Tidak ada deskripsi' %></p>
+                                </div>
+                            </td>
+                            <td class="p-4 text-slate-300">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700/60">
+                                    <%= p.category_emoji || '📦' %> <%= p.category_name || 'Tanpa Kategori' %>
+                                </span>
+                            </td>
+                            <td class="p-4 font-bold text-emerald-400"><%= formatRupiah(p.price) %></td>
+                            <td class="p-4">
+                                <% if (p.stock_count > 0) { %>
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        🟢 <%= p.stock_count %> Tersedia
+                                    </span>
+                                <% } else { %>
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                        🔴 Habis
+                                    </span>
+                                <% } %>
+                            </td>
+                            <td class="p-4">
+                                <span class="px-2.5 py-1 rounded text-xs font-semibold <%= p.active ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-slate-800 text-slate-500' %>">
+                                    <%= p.active ? 'Aktif' : 'Nonaktif' %>
+                                </span>
+                            </td>
+                            <td class="p-4 text-right space-x-2">
+                                <a href="/stocks?product_id=<%= p.id %>" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-key"></i> Stok
+                                </a>
+                                <form action="/products/delete/<%= p.id %>" method="POST" onsubmit="return confirm('Hapus produk ini beserta seluruh stoknya?')" class="inline">
+                                    <button type="submit" class="p-2 text-slate-400 hover:text-rose-400 transition">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal: Add Product -->
+    <div id="modal-add-product" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+                <h4 class="text-lg font-bold text-white">Tambah Produk Digital</h4>
+                <button onclick="document.getElementById('modal-add-product').classList.add('hidden')" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form action="/products/create" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Nama Produk</label>
+                    <input type="text" name="name" required placeholder="Contoh: Steam Random Key VIP"
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Kategori</label>
+                    <select name="category_id" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                        <% categories.forEach(cat => { %>
+                            <option value="<%= cat.id %>"><%= cat.emoji %> <%= cat.name %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Harga (Rupiah)</label>
+                    <input type="number" name="price" required placeholder="15000"
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">URL Gambar / Thumbnail</label>
+                    <input type="url" name="image_url" placeholder="https://..."
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Deskripsi Produk</label>
+                    <textarea name="description" rows="3" placeholder="Jelaskan detail produk, cara redeem, dan garansi..."
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('modal-add-product').classList.add('hidden')"
+                        class="px-4 py-2 text-slate-400 hover:text-white font-medium">Batal</button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-md shadow-indigo-600/30">
+                        Simpan Produk
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Category -->
+    <div id="modal-add-category" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+                <h4 class="text-lg font-bold text-white">Tambah Kategori Baru</h4>
+                <button onclick="document.getElementById('modal-add-category').classList.add('hidden')" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form action="/categories/create" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Emoji</label>
+                    <input type="text" name="emoji" value="📦" placeholder="🎮, 🚀, ⭐"
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Nama Kategori</label>
+                    <input type="text" name="name" required placeholder="Contoh: Game Keys"
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Deskripsi Singkat</label>
+                    <input type="text" name="description" placeholder="Voucher dan key game original"
+                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('modal-add-category').classList.add('hidden')"
+                        class="px-4 py-2 text-slate-400 hover:text-white font-medium">Batal</button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-md shadow-indigo-600/30">
+                        Simpan Kategori
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>

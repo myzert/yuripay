@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Discord Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-indigo-950/50">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-2xl mx-auto shadow-lg shadow-indigo-500/30 mb-4">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-white">Store Admin Portal</h1>
+            <p class="text-sm text-slate-400 mt-1">Masuk untuk mengelola produk, saldo, dan pesanan</p>
+        </div>
+
+        <% if (error) { %>
+            <div class="mb-6 p-4 rounded-xl bg-rose-950/80 border border-rose-800/50 text-rose-300 text-sm flex items-center gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                <span><%= error %></span>
+            </div>
+        <% } %>
+
+        <form action="/login" method="POST" class="space-y-5">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Username</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-user"></i>
+                    </span>
+                    <input type="text" name="username" required placeholder="admin"
+                        class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-key"></i>
+                    </span>
+                    <input type="password" name="password" required placeholder="••••••••"
+                        class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+                <span>Masuk Dashboard</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="mt-8 text-center text-xs text-slate-500">
+            &copy; Discord Auto-Pay Store • GoPay API Gateway Integration
+        </div>
+    </div>
+
+</body>
+</html>

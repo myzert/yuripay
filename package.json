@@ -1,0 +1,32 @@
+{
+  "name": "yuripay",
+  "version": "1.0.0",
+  "description": "YuriPay - Smart Dynamic QRIS & Soundbox Voice Alert by YuriDev",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "login": "node login.js"
+  },
+  "keywords": [
+    "gopay",
+    "qris",
+    "gobiz",
+    "merchant",
+    "payment-gateway"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.20.0",
+    "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.19.0",
+    "qrcode": "^1.5.4"
+  }
+}

@@ -1,0 +1,217 @@
+<div class="space-y-8 max-w-4xl">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-white">GoPay / GoBiz Merchant Login OTP</h3>
+            <p class="text-xs text-slate-400 mt-1">Autentikasi resmi nomor HP GoBiz & generate sesi auto-refresh permanen (Decoded)</p>
+        </div>
+    </div>
+
+    <!-- Active Session Card (If Logged In) -->
+    <% if (session) { %>
+        <div class="bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-800/40 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white text-base flex items-center gap-2">
+                        <span>Sesi GoBiz Aktif: <%= session.outlet_name || 'Merchant GoPay' %></span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300">VALID</span>
+                    </h4>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Nomor HP: <span class="text-white font-mono"><%= session.phone_number %></span> • Merchant ID: <span class="text-cyan-400 font-mono"><%= session.merchant_id %></span>
+                    </p>
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        Token berlaku hingga: <span class="text-slate-300 font-mono"><%= session.expires_at %></span> (Auto-refresh aktif tiap 6 jam)
+                    </p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('login-box').scrollIntoView({ behavior: 'smooth' })"
+                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition border border-slate-700">
+                Login Akun Lain
+            </button>
+        </div>
+    <% } %>
+
+    <!-- Web-Based OTP Login Form -->
+    <div id="login-box" class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
+        <div class="pb-6 border-b border-slate-800 mb-6 flex items-center justify-between">
+            <div>
+                <h4 class="font-bold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-key text-cyan-400"></i>
+                    <span>Login OTP Langsung di Web</span>
+                </h4>
+                <p class="text-xs text-slate-400 mt-0.5">Tidak perlu menjalankan terminal, sesi langsung tersimpan otomatis</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                DECODED API
+            </span>
+        </div>
+
+        <!-- Alert Notification Box -->
+        <div id="alert-box" class="hidden mb-6 p-4 rounded-2xl text-sm flex items-center gap-3"></div>
+
+        <!-- Step 1: Input Phone Number -->
+        <div id="step-1" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                    Nomor HP GoBiz / GoFood Merchant
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 font-bold">
+                        +62
+                    </span>
+                    <input type="text" id="phone-input" placeholder="85119772671 atau 0851..."
+                        class="w-full pl-14 pr-4 py-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-white font-mono text-base font-bold placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition">
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1">Masukkan nomor HP yang terdaftar pada aplikasi GoBiz.</p>
+            </div>
+
+            <button type="button" id="btn-request-otp" onclick="handleRequestOtp()"
+                class="w-full py-3.5 bg-[#00AED6] hover:bg-[#0084A3] text-white font-bold rounded-2xl transition shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane" id="request-icon"></i>
+                <span>Kirim Kode OTP via SMS / WhatsApp</span>
+            </button>
+        </div>
+
+        <!-- Step 2: Input OTP (Initially Hidden) -->
+        <div id="step-2" class="hidden space-y-4">
+            <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400">Kode OTP dikirim ke:</p>
+                    <p id="target-phone-display" class="font-mono font-bold text-white text-sm"></p>
+                </div>
+                <button type="button" onclick="backToStep1()" class="text-xs text-cyan-400 hover:underline">
+                    Ganti Nomor
+                </button>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                    Masukkan Kode OTP (4 Digit)
+                </label>
+                <input type="text" id="otp-input" maxlength="4" placeholder="••••"
+                    class="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-white font-mono text-2xl font-bold text-center tracking-[0.5em] placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition">
+            </div>
+
+            <button type="button" id="btn-verify-otp" onclick="handleVerifyOtp()"
+                class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check" id="verify-icon"></i>
+                <span>Verifikasi OTP & Simpan Sesi</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Terminal CLI Alternative Guide -->
+    <div class="p-6 bg-slate-900/60 border border-slate-800/80 rounded-3xl">
+        <h5 class="text-sm font-bold text-slate-300 flex items-center gap-2 mb-2">
+            <i class="fa-solid fa-terminal text-cyan-400"></i>
+            <span>Alternatif CLI Terminal (Decoded)</span>
+        </h5>
+        <p class="text-xs text-slate-400 mb-3">
+            Anda juga dapat login langsung dari terminal menggunakan script decoded tanpa obfuscation:
+        </p>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-cyan-300 select-all">
+            node login.js
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let currentOtpToken = '';
+    let currentFormattedPhone = '';
+
+    function showAlert(msg, isSuccess = false) {
+        const box = document.getElementById('alert-box');
+        box.className = isSuccess 
+            ? 'mb-6 p-4 rounded-2xl text-sm flex items-center gap-3 bg-emerald-950/80 border border-emerald-800/50 text-emerald-300'
+            : 'mb-6 p-4 rounded-2xl text-sm flex items-center gap-3 bg-rose-950/80 border border-rose-800/50 text-rose-300';
+        box.innerHTML = `<i class="fa-solid ${isSuccess ? 'fa-circle-check text-emerald-400' : 'fa-triangle-exclamation text-rose-400'} text-lg"></i><span>${msg}</span>`;
+        box.classList.remove('hidden');
+    }
+
+    async function handleRequestOtp() {
+        const phone = document.getElementById('phone-input').value.trim();
+        if (!phone || phone.length < 9) {
+            showAlert('Masukkan nomor HP GoBiz yang valid!');
+            return;
+        }
+
+        const btn = document.getElementById('btn-request-otp');
+        const icon = document.getElementById('request-icon');
+        icon.className = 'fa-solid fa-spinner animate-spin';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/auth/request-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone })
+            });
+            const data = await res.json();
+
+            if (data.success && data.otp_token) {
+                currentOtpToken = data.otp_token;
+                currentFormattedPhone = data.phone;
+                document.getElementById('target-phone-display').innerText = data.phone;
+                document.getElementById('step-1').classList.add('hidden');
+                document.getElementById('step-2').classList.remove('hidden');
+                showAlert('Kode OTP 4 digit berhasil dikirim via SMS/WhatsApp!', true);
+            } else {
+                showAlert(data.message || 'Gagal mengirim OTP.');
+            }
+        } catch (err) {
+            showAlert('Terjadi kesalahan jaringan: ' + err.message);
+        } finally {
+            icon.className = 'fa-solid fa-paper-plane';
+            btn.disabled = false;
+        }
+    }
+
+    async function handleVerifyOtp() {
+        const otp = document.getElementById('otp-input').value.trim();
+        if (!otp || otp.length !== 4) {
+            showAlert('Kode OTP harus 4 digit angka!');
+            return;
+        }
+
+        const btn = document.getElementById('btn-verify-otp');
+        const icon = document.getElementById('verify-icon');
+        icon.className = 'fa-solid fa-spinner animate-spin';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    otp,
+                    otp_token: currentOtpToken,
+                    phone: currentFormattedPhone
+                })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                showAlert('Login GoBiz Berhasil! Memperbarui halaman...', true);
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showAlert(data.message || 'Verifikasi OTP gagal.');
+            }
+        } catch (err) {
+            showAlert('Terjadi kesalahan jaringan: ' + err.message);
+        } finally {
+            icon.className = 'fa-solid fa-check';
+            btn.disabled = false;
+        }
+    }
+
+    function backToStep1() {
+        document.getElementById('step-2').classList.add('hidden');
+        document.getElementById('step-1').classList.remove('hidden');
+        document.getElementById('alert-box').classList.add('hidden');
+    }
+</script>
