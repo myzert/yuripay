@@ -1,7 +1,7 @@
 {
   "name": "yuripay",
   "version": "1.0.0",
-  "description": "YuriPay - Smart Dynamic QRIS & Soundbox Voice Alert by YuriDev",
+  "description": "YURIPAY by myzert - Enterprise Self-Hosted Dynamic QRIS Payment Gateway for GoBiz Merchants",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,14 +9,17 @@
     "login": "node login.js"
   },
   "keywords": [
+    "yuripay",
+    "myzert",
     "gopay",
     "qris",
     "gobiz",
     "merchant",
-    "payment-gateway"
+    "payment-gateway",
+    "midtrans"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "myzert <zerttcihuy@gmail.com>",
+  "license": "Apache-2.0",
   "type": "commonjs",
   "dependencies": {
     "axios": "^1.20.0",

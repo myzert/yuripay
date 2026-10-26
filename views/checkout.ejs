@@ -54,9 +54,13 @@
     <header class="bg-white dark:bg-darkCard border-b border-slate-200 dark:border-darkBorder px-6 py-3.5 sticky top-0 z-30 shadow-sm transition-colors duration-200">
         <div class="max-w-xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
+                <% if (typeof storeLogoUrl !== 'undefined' && storeLogoUrl) { %>
+                    <img src="<%= storeLogoUrl %>" alt="<%= storeName %>" class="w-10 h-10 rounded-2xl object-cover shadow-md border border-slate-200 dark:border-darkBorder">
+                <% } else { %>
+                    <div class="w-10 h-10 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                <% } %>
                 <div>
                     <h1 class="text-base font-extrabold tracking-tight flex items-center gap-1.5 text-slate-900 dark:text-white">
                         <span><%= storeName %></span>
@@ -71,20 +75,28 @@
                 </div>
             </div>
 
-            <!-- Action Buttons: Sound & Theme -->
-            <div class="flex items-center space-x-2">
+            <!-- Action Buttons: Theme Mode, Sound & Display Theme -->
+            <div class="flex items-center space-x-1.5 sm:space-x-2">
+                <!-- Success Theme Toggle: Anime vs Default -->
+                <button id="btn-toggle-theme-mode" onclick="toggleSuccessThemeMode()" 
+                    class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300 transition border border-slate-200 dark:border-slate-700 flex items-center gap-1.5" 
+                    title="Ganti Mode Tampilan Sukses (Anime / Default)">
+                    <span id="badge-theme-mode" class="w-2 h-2 rounded-full bg-pink-500"></span>
+                    <span id="label-theme-mode" class="hidden sm:inline">Anime</span>
+                </button>
+
                 <!-- Soundbox Mute/Unmute Toggle -->
                 <button id="sound-toggle-btn" onclick="toggleSound()" 
-                    class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-sky-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
+                    class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-sky-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
                     title="Aktifkan / Bisukan Notifikasi Suara">
-                    <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                    <i id="sound-icon" class="fa-solid fa-volume-high text-xs sm:text-sm"></i>
                 </button>
 
                 <!-- Dark / Light Mode Switch -->
                 <button onclick="toggleDarkMode()" 
-                    class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
+                    class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
                     title="Ganti Mode Tampilan">
-                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                    <i id="theme-icon" class="fa-solid fa-moon text-xs sm:text-sm"></i>
                 </button>
             </div>
         </div>
@@ -376,6 +388,32 @@
         const arigatoLocal = new Audio('/sounds/cute-arigato.mp3');
         const arigatoOnline = new Audio('https://www.myinstants.com/media/sounds/cute-arigato.mp3');
 
+        // Success Theme Mode: 'anime' (Marin Kitagawa pop-up) vs 'default' (Corporate fintech chime)
+        const serverSuccessTheme = '<%= payment ? payment.success_theme : "anime" %>';
+        const savedThemePref = localStorage.getItem('yuripay_user_success_theme');
+        let currentSuccessTheme = savedThemePref || serverSuccessTheme || 'anime';
+
+        function initSuccessThemeUI() {
+            const badge = document.getElementById('badge-theme-mode');
+            const label = document.getElementById('label-theme-mode');
+            if (badge && label) {
+                if (currentSuccessTheme === 'anime') {
+                    badge.className = 'w-2 h-2 rounded-full bg-pink-500 animate-pulse';
+                    label.innerText = 'Mode Anime';
+                } else {
+                    badge.className = 'w-2 h-2 rounded-full bg-emerald-500';
+                    label.innerText = 'Mode Default';
+                }
+            }
+        }
+
+        function toggleSuccessThemeMode() {
+            currentSuccessTheme = currentSuccessTheme === 'anime' ? 'default' : 'anime';
+            localStorage.setItem('yuripay_user_success_theme', currentSuccessTheme);
+            initSuccessThemeUI();
+        }
+        initSuccessThemeUI();
+
         // Soundbox Mute Setting
         let isMuted = localStorage.getItem('yuripay_sound_muted') === 'true';
         function initSoundSetting() {
@@ -400,7 +438,7 @@
             arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
         }
 
-        // Play Cute Arigato Sound Only
+        // 1. Play Cute Arigato Sound (Anime Mode)
         function playCuteSound() {
             if (isMuted) return;
             arigatoLocal.currentTime = 0;
@@ -408,6 +446,30 @@
                 arigatoOnline.currentTime = 0;
                 arigatoOnline.play().catch(e => console.warn('Audio play:', e));
             });
+        }
+
+        // 2. Play Corporate Fintech Chime (Default Mode via Web Audio API)
+        function playDefaultChime() {
+            if (isMuted) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+
+                // Subtle two-tone chime (523Hz -> 784Hz)
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.9);
+            } catch (e) {
+                console.warn('Default audio chime error:', e);
+            }
         }
 
         function launchConfetti() {
@@ -541,16 +603,18 @@
             if (pollTimer) clearInterval(pollTimer);
             if (countdownTimer) clearInterval(countdownTimer);
 
-            // 1. Play cute arigato sound only (no Google TTS)
-            playCuteSound();
-
-            // 2. Confetti party
+            // 1. Confetti party
             launchConfetti();
 
-            // 3. Anime pop-up
-            showAnimeModal();
+            // 2. Play sound & display celebration based on Success Theme
+            if (currentSuccessTheme === 'anime') {
+                playCuteSound();
+                showAnimeModal();
+            } else {
+                playDefaultChime();
+            }
 
-            // 4. Switch UI Card to Success View
+            // 3. Switch UI Card to Success View
             document.getElementById('stage-waiting').classList.add('hidden');
             document.getElementById('stage-success').classList.remove('hidden');
 

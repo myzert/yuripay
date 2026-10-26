@@ -31,7 +31,7 @@ function initPaymentTable() {
             );
         `);
 
-        // Migration: ensure columns order_id, webhook_url, webhook_sent exist
+        // Migration: ensure columns order_id, webhook_url, webhook_sent, success_theme exist
         const columns = db.db.prepare("PRAGMA table_info(yuripay_payments)").all().map(c => c.name);
         if (!columns.includes('order_id')) {
             db.db.exec("ALTER TABLE yuripay_payments ADD COLUMN order_id TEXT;");
@@ -41,6 +41,9 @@ function initPaymentTable() {
         }
         if (!columns.includes('webhook_sent')) {
             db.db.exec("ALTER TABLE yuripay_payments ADD COLUMN webhook_sent INTEGER DEFAULT 0;");
+        }
+        if (!columns.includes('success_theme')) {
+            db.db.exec("ALTER TABLE yuripay_payments ADD COLUMN success_theme TEXT DEFAULT 'anime';");
         }
 
         // Load active pending payments into memory
@@ -62,6 +65,7 @@ function initPaymentTable() {
                 redirectUrl: row.redirect_url,
                 webhookUrl: row.webhook_url,
                 webhookSent: !!row.webhook_sent,
+                successTheme: row.success_theme || process.env.DEFAULT_SUCCESS_THEME || 'anime',
                 qrisCode: row.qris_code,
                 qrImage: row.qr_image,
                 status: row.status,
@@ -114,6 +118,7 @@ function mapRowToPayment(row) {
         redirectUrl: row.redirect_url,
         webhookUrl: row.webhook_url,
         webhookSent: !!row.webhook_sent,
+        successTheme: row.success_theme || process.env.DEFAULT_SUCCESS_THEME || 'anime',
         qrisCode: row.qris_code,
         qrImage: row.qr_image,
         status: row.status,
@@ -128,7 +133,7 @@ function mapRowToPayment(row) {
  * Create dynamic payment transaction with IDEMPOTENCY check
  * Prevents creating a new payment on page refresh / network retry!
  */
-async function createPayment({ nominal, orderId = null, customName, redirectUrl, webhookUrl, useUniqueCode = true }) {
+async function createPayment({ nominal, orderId = null, customName, redirectUrl, webhookUrl, successTheme = null, useUniqueCode = true }) {
     const baseAmount = parseInt(nominal, 10);
     if (isNaN(baseAmount) || baseAmount < 50) {
         throw new Error('Nominal tidak valid (Minimal Rp 50)');
@@ -188,6 +193,7 @@ async function createPayment({ nominal, orderId = null, customName, redirectUrl,
         redirectUrl: redirectUrl || null,
         webhookUrl: webhookUrl || null,
         webhookSent: false,
+        successTheme: successTheme || process.env.DEFAULT_SUCCESS_THEME || 'anime',
         qrisCode: qrisResult.qris_code,
         qrImage,
         status: 'PENDING',
@@ -204,8 +210,8 @@ async function createPayment({ nominal, orderId = null, customName, redirectUrl,
     try {
         const insertStmt = db.db.prepare(`
             INSERT INTO yuripay_payments 
-            (id, order_id, trx_id, base_amount, unique_code, total_amount, custom_name, redirect_url, webhook_url, qris_code, qr_image, status, webhook_sent, created_at, expires_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+            (id, order_id, trx_id, base_amount, unique_code, total_amount, custom_name, redirect_url, webhook_url, success_theme, qris_code, qr_image, status, webhook_sent, created_at, expires_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
         `);
         insertStmt.run(
             paymentId,
@@ -217,6 +223,7 @@ async function createPayment({ nominal, orderId = null, customName, redirectUrl,
             payment.customName,
             payment.redirectUrl,
             payment.webhookUrl,
+            payment.successTheme,
             payment.qrisCode,
             payment.qrImage,
             'PENDING',
@@ -411,6 +418,7 @@ function sanitizePublic(payment, baseUrl = '') {
         payment_url: `${baseUrl}/pay/${payment.id}`,
         qr_image: payment.qrImage || payment.qr_image,
         status: payment.status,
+        success_theme: payment.successTheme || payment.success_theme || process.env.DEFAULT_SUCCESS_THEME || 'anime',
         redirect_url: payment.redirectUrl || payment.redirect_url || null,
         webhook_url: payment.webhookUrl || payment.webhook_url || null,
         created_at: payment.createdAt || payment.created_at,

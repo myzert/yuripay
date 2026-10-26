@@ -7,22 +7,25 @@ function getSwaggerSpec(serverUrl = 'http://localhost:3000') {
     return {
         openapi: '3.0.3',
         info: {
-            title: 'YuriPay API - Smart QRIS Gateway & Midtrans Webhook Engine',
+            title: 'YURIPAY by myzert - Enterprise Dynamic QRIS Gateway & Midtrans Webhook Engine',
             version: '1.0.0',
             description: `
-Dokumentasi API Resmi **YuriPay** oleh **YuriDev**.
+Dokumentasi Resmi **YURIPAY by myzert**.
+Payment Gateway QRIS Dinamis Mandiri untuk Merchant GoBiz / GoPay dengan format Webhook 100% identik dengan Midtrans.
 
 ### 🌟 Fitur Utama:
-1. **Idempotensi Anti-Duplikat**: Kirim parameter \`order_id\` yang sama (misal saat pengguna merefresh halaman atau retry), YuriPay akan mengembalikan tagihan yang sama tanpa membuat transaksi baru.
-2. **Skema Webhook 100% Persis Midtrans**: Notifikasi HTTP POST dengan format payload dan signature key yang identik dengan Midtrans (\`SHA512(order_id + status_code + gross_amount + ServerKey)\`).
-3. **Offset / Kode Unik Cerdas**:
-   - Pembelian kecil (Rp 50+ s/d < Rp 1.000): offset cuma +Rp 1 perak.
-   - Pembelian Rp 1.000+: offset acak 1 s/d 199 (tidak boleh lebih dari 200).
-4. **Link Redirect OP**: Saat pembayaran selesai, pelanggan dialihkan ke \`redirect_url\` lengkap dengan parameter status transaksi ala Midtrans.
+1. **Idempotensi Anti-Duplikat**: Menggunakan \`order_id\` unik agar refresh browser pelanggan tidak menciptakan transaksi ganda.
+2. **Skema Webhook 100% Persis Midtrans**: Notifikasi HTTP POST dengan format payload dan signature key yang identik (\`SHA512(order_id + status_code + gross_amount + ServerKey)\`).
+3. **Offset Cerdas (+1 Perak)**:
+   - Rp 50 s/d < Rp 1.000: strictly +1 perak.
+   - Rp 1.000+: acak 1..199 perak (maksimal 200 perak).
+4. **Dual Success Theme**: Mendukung tema \`anime\` (Marin Kitagawa pop-up & cute audio) dan \`default\` (Corporate fintech sound chime).
+5. **Kustomisasi Logo & Branding**: Mendukung logo merchant kustom (\`STORE_LOGO_URL\`).
+6. **Stateful High-Performance Architecture**: Dioptimalkan khusus untuk VPS (Ubuntu/Debian), cPanel (Node.js Selector), Docker, dan Termux.
             `,
             contact: {
-                name: 'YuriDev Support',
-                url: 'http://localhost:3000'
+                name: 'myzert (YuriDev)',
+                url: 'https://github.com/myzert/yuripay'
             }
         },
         servers: [

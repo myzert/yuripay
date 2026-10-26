@@ -43,7 +43,7 @@ async function main() {
      ██║   ╚██████╔╝██║  ██║██║██║     ██║  ██║   ██║   
      ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝     ╚═╝  ╚═╝   ╚═╝   
     ${colors.reset}`);
-    console.log(`${colors.bright}⚡ YuriPay - GoBiz Official Merchant Authentication Assistant${colors.reset}`);
+    console.log(`${colors.bright}⚡ YURIPAY by myzert - GoBiz Official Merchant Authentication Assistant${colors.reset}`);
     console.log(`${colors.dim}----------------------------------------------------------------------${colors.reset}`);
     console.log(`${colors.yellow}Petunjuk Penting:${colors.reset}`);
     console.log(` 1. Pastikan nomor HP yang Anda masukkan terdaftar aktif di aplikasi GoBiz / GoFood Merchant.`);

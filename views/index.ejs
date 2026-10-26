@@ -54,9 +54,13 @@
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <!-- Brand -->
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
-                    <i class="fa-solid fa-qrcode"></i>
-                </div>
+                <% if (typeof storeLogoUrl !== 'undefined' && storeLogoUrl) { %>
+                    <img src="<%= storeLogoUrl %>" alt="<%= storeName %>" class="w-10 h-10 rounded-2xl object-cover shadow-md border border-slate-200 dark:border-darkBorder">
+                <% } else { %>
+                    <div class="w-10 h-10 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                <% } %>
                 <div>
                     <h1 class="text-lg font-extrabold tracking-tight flex items-center gap-2 text-slate-900 dark:text-white">
                         <span><%= appName %></span>

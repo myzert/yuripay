@@ -1,353 +1,345 @@
-# ⚡ YuriPay - Dual-Port Smart QRIS Gateway & Soundbox
+# ⚡ YURIPAY by myzert
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/myzert/yuripay/main/public/images/thank-you.webp" alt="YuriPay Anime Pop-Up" width="180" style="border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);" />
+  <img src="https://raw.githubusercontent.com/myzert/yuripay/main/public/images/thank-you.webp" alt="YuriPay Banner" width="160" style="border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);" />
 </p>
 
 <p align="center">
-  <strong>Payment Gateway QRIS Dinamis Mandiri & Soundbox Realtime untuk Merchant GoBiz</strong><br>
-  <em>Modern • Dual-Port Terisolasi • Format Webhook 100% Midtrans • Anti-Duplikat • OpenAPI 3.0</em>
+  <strong>Enterprise Self-Hosted Dynamic QRIS Payment Gateway for GoBiz Merchants</strong><br>
+  <em>Stateful High-Performance • Dual-Port Isolation • Midtrans SHA-512 Webhook • Idempotent • OpenAPI 3.0</em>
 </p>
 
 <p align="center">
-  <a href="#-fitur-unggulan"><img src="https://img.shields.io/badge/QRIS-Bank%20Indonesia%20Standard-red.svg?style=for-the-badge" alt="QRIS Standard" /></a>
-  <a href="#-arsitektur-keamanan-dual-port"><img src="https://img.shields.io/badge/Security-Dual--Port%20Isolated-blue.svg?style=for-the-badge" alt="Dual Port" /></a>
-  <a href="#-integrasi-webhook-100-identik-midtrans"><img src="https://img.shields.io/badge/Webhook-Midtrans%20SHA512-orange.svg?style=for-the-badge" alt="Midtrans Compatible" /></a>
-  <a href="#-mengapa-yuripay-tidak-bisa-di-deploy-di-vercel--serverless"><img src="https://img.shields.io/badge/Runtime-Stateful%20Only%20(No%20Serverless)-critical.svg?style=for-the-badge" alt="Stateful Only" /></a>
-  <a href="#-panduan-deployment-produksi"><img src="https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Ready" /></a>
+  <img src="https://img.shields.io/badge/YURIPAY-by%20myzert-0284c7?style=for-the-badge&logo=shield" alt="YuriPay by myzert" />
+  <img src="https://img.shields.io/badge/QRIS-Bank%20Indonesia%20Standard-red?style=for-the-badge" alt="QRIS Standard" />
+  <img src="https://img.shields.io/badge/Runtime-Stateful%20Only%20(VPS%20%7C%20cPanel%20%7C%20Docker)-success?style=for-the-badge" alt="Stateful Only" />
+  <img src="https://img.shields.io/badge/Serverless-STRICTLY%20UNSUPPORTED-critical?style=for-the-badge" alt="No Serverless" />
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="Apache 2.0 License" />
 </p>
+
+---
+
+## ⚖️ PERNYATAAN PENOLAKAN & KEPATUHAN HUKUM (LEGAL DISCLAIMER)
+
+> [!IMPORTANT]
+> **PEMBERITAHUAN RESMI HUKUM:**
+> 1. **Proyek Komunitas Mandiri (Unofficial Project)**: **YURIPAY** adalah perangkat lunak sumber terbuka (*open source*) independen yang dikembangkan oleh **myzert** untuk tujuan penelitian, edukasi, dan integrasi kasir mandiri (*self-hosted gateway*). Perangkat lunak ini **TIDAK berafiliasi, didukung, disponsori, atau disetujui secara resmi oleh PT GoTo Gojek Tokopedia Tbk (Gojek / GoPay / GoBiz), Bank Indonesia, maupun Asosiasi Sistem Pembayaran Indonesia (ASPI)**.
+> 2. **Kepatuhan Pedagang (Merchant Compliance)**: Seluruh penggunaan API GoBiz dan pemrosesan dana operasional adalah tanggung jawab mutlak masing-masing pedagang (*merchant*) pemilik akun. Pengguna wajib mematuhi Syarat & Ketentuan Layanan GoBiz dan peraturan Bank Indonesia mengenai transaksi pembayaran QRIS (PADG No. 21/18/PADG/2019).
+> 3. **Tanpa Jaminan (No Warranty)**: Perangkat lunak ini disediakan di bawah lisensi resmi [Apache License 2.0](LICENSE) "sebagaimana adanya" (*as-is*) tanpa jaminan dalam bentuk apa pun, baik tersurat maupun tersirat.
 
 ---
 
 ## 📑 Daftar Isi
-1. [Tentang YuriPay](#-tentang-yuripay)
-2. [⚠️ PENTING: Mengapa TIDAK BISA di-deploy di Vercel / Serverless?](#-mengapa-yuripay-tidak-bisa-di-deploy-di-vercel--serverless)
-3. [Fitur Unggulan](#-fitur-unggulan)
+1. [Ikhtisar Arsitektur](#-ikhtisar-arsitektur)
+2. [⚠️ MENGAPA YURIPAY TIDAK BISA DI-DEPLOY DI VERCEL / SERVERLESS?](#-mengapa-yuripay-tidak-bisa-di-deploy-di-vercel--serverless)
+3. [Fitur Utama Enterprise](#-fitur-utama-enterprise)
 4. [Arsitektur Keamanan Dual-Port](#-arsitektur-keamanan-dual-port)
-5. [Panduan Login GoBiz Merchant](#-panduan-login-gobiz-merchant)
-6. [Panduan Instalasi & Menjalankan](#-panduan-instalasi--menjalankan)
-7. [Panduan Deployment Produksi (VPS, Docker, PM2, Termux)](#-panduan-deployment-produksi)
+5. [Otentikasi Akun GoBiz Merchant](#-otentikasi-akun-gobiz-merchant)
+6. [Panduan Deployment Produksi (VPS, cPanel, Docker, Termux)](#-panduan-deployment-produksi)
+7. [Kustomisasi Logo & Identitas Merchant](#-kustomisasi-logo--identitas-merchant)
 8. [Konfigurasi Environment (.env)](#-konfigurasi-environment-env)
-9. [Dokumentasi API & Integrasi Midtrans](#-dokumentasi-api--integrasi-midtrans)
+9. [Spesifikasi API & Integrasi Midtrans](#-spesifikasi-api--integrasi-midtrans)
 10. [Dokumentasi Swagger UI](#-dokumentasi-swagger-ui)
-11. [FAQ & Pemecahan Masalah](#-faq--pemecahan-masalah)
+11. [Pertanyaan Umum (FAQ)](#-pertanyaan-umum-faq)
 12. [Lisensi & Kontribusi](#-lisensi--kontribusi)
 
 ---
 
-## 🌟 Tentang YuriPay
+## 🏛️ Ikhtisar Arsitektur
 
-**YuriPay** adalah solusi payment gateway mandiri (*self-hosted*) berkinerja tinggi yang mengubah akun **GoBiz / GoFood Merchant** biasa menjadi gateway pembayaran QRIS otomatis sekelas perusahaan fintech:
-- **Tanpa potongan biaya transaksi pihak ketiga** (0% fee gateway, hanya MDR resmi GoBiz).
-- **Settlement realtime** langsung masuk ke saldo rekening bank terdaftar Anda.
-- **Soundbox interaktif** dengan efek suara lucu (*Cute Arigato*) dan animasi pop-up ucapan terima kasih.
-- **Kompatibilitas penuh dengan ekosistem Midtrans**: format notifikasi webhook HTTP POST dan kalkulasi `signature_key` (SHA-512) dibuat 100% identik sehingga toko online (WooCommerce, WHMCS, Laravel, Express) dapat langsung terhubung tanpa perlu merombak kode penerima webhook!
+**YURIPAY by myzert** menjembatani akun merchant **GoBiz** reguler menjadi payment gateway QRIS dinamis mandiri (*on-premise / self-hosted*) yang mampu memproses tagihan secara otomatis dalam hitungan detik tanpa biaya potongan gateway pihak ketiga (0% gateway fee).
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 ALUR TRANSAKSI YURIPAY                                 │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+
+  [ Pelanggan Toko ]                                            [ Merchant Server / Store ]
+          │                                                                  │
+          │ 1. Buat Tagihan (POST /api/create-payment)                       │
+          │◄─────────────────────────────────────────────────────────────────┤
+          │                                                                  │
+          ▼                                                                  │
+  [ Halaman Checkout (/pay/:id) ]                                            │
+  • QRIS Dinamis Otomatis                                                    │
+  • Nominal Unik (+1 Perak)                                                  │
+  • Mode: Default Chime / Anime                                              │
+          │                                                                  │
+          │ 2. Pembayaran via Bank / E-Wallet (BCA, GoPay, DANA, dll.)        │
+          ▼                                                                  │
+  [ GoPay / GoBiz Network ]                                                  │
+          │                                                                  │
+          │ 3. Settlement Masuk ke Rekening GoBiz                            │
+          ▼                                                                  │
+  [ YuriPay Background Daemon (Port 3000 & 3001) ]                           │
+  • Poller Realtime (Setiap 2.5 Detik)                                       │
+  • Pencocokan Presisi Nominal Unik & Timestamp                              │
+  • Update Status SQLite -> LUNAS • TERVERIFIKASI                            │
+          │                                                                  │
+          ├─────────────────────────────────────────────────────────────────►│
+          │ 4. Webhook HTTP POST (Midtrans SHA-512)                          │
+          │                                                                  ▼
+          │                                                      [ Pesanan Diproses Toko ]
+          │ 5. Auto OP Redirect ke Website Toko                              │
+          ▼                                                                  │
+  [ Toko Selesai (https://tokosaya.com/finish?order_id=...&status_code=200) ]│
+```
 
 ---
 
 ## ⚠️ MENGAPA YURIPAY TIDAK BISA DI-DEPLOY DI VERCEL / SERVERLESS?
 
 > [!CAUTION]
-> **YuriPay dirancang secara fundamental sebagai DAEMON STATEFUL dan TIDAK MENDUKUNG deployment di Vercel, Netlify, Cloudflare Workers, atau platform Serverless lainnya.**
+> **YuriPay dirancang secara fundamental sebagai DAEMON STATEFUL. YuriPay TIDAK DAPAT BERJALAN di Vercel, Netlify, Cloudflare Workers, AWS Lambda, atau platform Serverless sejenis.**
 
-Berikut adalah alasan teknis mengapa platform serverless akan gagal:
+Secara arsitektur perangkat lunak, sistem gateway membutuhkan empat pilar runtime yang tidak dimiliki lingkungan serverless:
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                   PERBANDINGAN ARSITEKTUR RUNTIME                            │
-├────────────────────────────────────────┬─────────────────────────────────────┤
-│ ❌ Serverless (Vercel / AWS Lambda)   │ ✔️ Stateful (VPS / Docker / PM2)    │
-├────────────────────────────────────────┼─────────────────────────────────────┤
-│ • Event loop dibekukan (freeze) saat   │ • Event loop berjalan terus menerus │
-│   respons HTTP selesai dikirim.        │   24/7 tanpa henti.                 │
-│ • Background Poller mati seketika!     │ • Poller mutasi GoPay aktif setiap  │
-│                                        │   2.5 detik mendeteksi transfer.    │
-│ • Filesystem bersifat ephemeral &      │ • Database SQLite WAL permanen di   │
-│   read-only (database terhapus acak).  │   disk lokal, ACID compliant.       │
-│ • Hanya bisa listen pada 1 port HTTP.  │ • Membuka Dual-Port simultan:       │
-│                                        │   Port 3000 (Admin) + 3001 (Publik) │
-│ • Sesi token memori reset setiap cold  │ • Cache sesi token in-memory tetap  │
-│   start, memicu flood login OTP.       │   aktif, token auto-refresh aman.   │
-└────────────────────────────────────────┴─────────────────────────────────────┘
-```
+| Kebutuhan Sistem YuriPay | ❌ Platform Serverless (Vercel / Lambda) | ✔️ Lingkungan Stateful (VPS / cPanel / Docker) |
+| :--- | :--- | :--- |
+| **Realtime Daemon Poller** | **Container dibekukan (*frozen*)** seketika setelah respons HTTP selesai dikirim. Event loop berhenti total dan mutasi tidak akan pernah terverifikasi. | **Node.js Process berjalan 24/7**, memverifikasi mutasi GoPay setiap 2.5 detik secara non-blocking. |
+| **Penyimpanan SQLite WAL** | Filesystem bersifat **read-only dan sementara (*ephemeral*)**. Database terhapus otomatis saat instance mati (*scale-to-zero*). | Database SQLite tersimpan permanen pada disk POSIX dengan konkurensi tinggi (**Write-Ahead Logging**). |
+| **Arsitektur Dual-Port** | Hanya mendukung single-port HTTP router standar. | Membuka dua socket port terisolasi secara simultan (**Port 3000** Internal & **Port 3001** Publik). |
+| **In-Memory Mutex Lock** | Instance serverless di-spawn secara acak (multi-instans tanpa sinkronisasi memori), menyebabkan tabrakan kode unik. | Menjaga memori sesi aktif terpusat, menjamin offset +1 perak tidak bertabrakan antar pelanggan. |
 
-### Rekomendasi Tempat Deploy:
-1. **Linux VPS** (Ubuntu 22.04 / Debian 12 / AlmaLinux) dengan PM2 atau Systemd.
-2. **Container Docker / Docker Compose** (DigitalOcean Droplet, Linode, Hetzner, AWS EC2, VPS IDCloudHost).
-3. **PaaS Stateful** seperti **Railway**, **Coolify**, atau **Fly.io** (dengan Persistent Volume terpasang).
-4. **Termux di Android** (Cocok untuk server kasir lokal hemat daya).
+**Platform Deployment yang Didukung Penuh:**
+- **Linux VPS**: Ubuntu 20.04 / 22.04 / 24.04 LTS, Debian 11 / 12, AlmaLinux, Rocky Linux.
+- **cPanel Web Hosting**: Menggunakan fitur **Setup Node.js App** (CloudLinux / Phusion Passenger).
+- **Docker & Docker Compose**: Container mandiri dengan persistensi volume.
+- **Termux di Android**: Server mandiri hemat energi pada smartphone Android fisik.
 
 ---
 
-## ✨ Fitur Unggulan
+## 💎 Fitur Utama Enterprise
 
-### 1. 🧮 Aturan Offset / Kode Unik Cerdas (+1 Perak)
-- **Nominal Kecil (Rp 50 s/d < Rp 1.000)**: Offset strictly **+Rp 1 perak** (contoh: Rp 50 &rarr; Rp 51, Rp 500 &rarr; Rp 501, Rp 75 &rarr; Rp 76) agar sangat presisi dan hemat bagi pelanggan.
-- **Nominal Rp 1.000 ke atas**: Offset acak antara **1 s/d 199 perak** (**maksimal 200 perak**).
-- **Pencegahan Tabrakan Unik**: Jika ada transaksi gantung pada nominal yang sama, sistem secara cerdas menaikkan offset berikutnya (+2, +3, dst.) sehingga mutasi tidak akan pernah tertukar antar pembeli!
+### 1. 🧮 Algoritma Offset Kode Unik Presisi (+1 Perak)
+- **Pembelian Mikro (Rp 50 s/d < Rp 1.000)**: Dikenakan offset tetap **+Rp 1 perak** (contoh: Rp 50 &rarr; Rp 51, Rp 500 &rarr; Rp 501, Rp 75 &rarr; Rp 76) agar sangat hemat dan tepat.
+- **Pembelian Standar (Rp 1.000 ke atas)**: Offset dinamis acak antara **1 s/d 199 perak** (**maksimal tidak lebih dari 200 perak**).
+- **Anti-Tabrakan Otomatis (*Collision Prevention*)**: Apabila ada transaksi gantung pada nominal yang sama, sistem secara cerdas menggeser offset (+2, +3, dst.) sehingga mutasi transfer tidak akan pernah tertukar antar pembeli.
 
-### 2. 🛡️ Idempotensi Transaksi (Anti-Duplikat Saat Refresh)
-- Pelanggan sering kali memuat ulang (*refresh*) browser saat halaman checkout sedang terbuka.
-- YuriPay mendukung parameter `order_id`. Jika `order_id` yang sama dikirim ulang, sistem mengembalikan data tagihan yang sudah ada tanpa membuat tagihan baru atau mengubah nominal unik.
-- Status pembayaran tersimpan permanen di SQLite: jika transaksi sudah dibayar, memuat ulang halaman `/pay/:id` **tetap menampilkan status LUNAS** beserta struk pembayaran resmi.
+### 2. 🎭 Dual Success Celebration Theme (Default & Anime)
+Merchant dan pelanggan dapat memilih gaya perayaan pembayaran sesuai kebutuhan bisnis:
+- **Mode Default (Corporate Fintech)**:
+  - Tampilan struk formal profesional bergaya Stripe / Apple Pay.
+  - Efek audio *Fintech Chime* elegan yang disintesis secara murni via **Web Audio API** (tanpa ketergantungan file eksternal, latensi nol).
+  - Konfeti perayaan halus tanpa pop-up anime.
+- **Mode Anime (Playful Store)**:
+  - Pop-up modal karakter Marin Kitagawa dengan animasi selebrasi.
+  - Efek suara audio *"Cute Arigato"*.
+  - Konfeti warna-warni (*Canvas Confetti*).
+- **Fleksibilitas Konfigurasi**:
+  - Diatur global via `.env` (`DEFAULT_SUCCESS_THEME="anime"` atau `"default"`).
+  - Diatur per transaksi via REST API (`success_theme: "default"` atau `"anime"`).
+  - Dilengkapi tombol toggle interaktif di bilah navigasi checkout.
 
-### 3. 🚀 OP Redirect Link (Overpowered ala Midtrans)
-Setelah pembeli sukses membayar, YuriPay secara otomatis mengalihkan pembeli ke `redirect_url` toko Anda dengan membawa parameter lengkap status transaksi:
+### 3. 🖼️ Kustomisasi Logo & Identitas Brand
+- Mendukung logo custom merchant melalui variabel `STORE_LOGO_URL` di file `.env`.
+- Jika dikosongkan, YuriPay otomatis menggunakan ikon lencana perisai SVG berkualitas tinggi.
+- Terintegrasi penuh pada halaman **Kasir Admin**, **Customer Checkout**, dan **Login Admin**.
+
+### 4. 🛡️ Idempotensi Transaksi Penuh
+- Pembeli yang me-refresh browser atau mengalami gangguan koneksi tidak akan membuat tagihan baru.
+- Pengiriman parameter `order_id` yang sama akan mengembalikan data pembayaran yang ada secara konsisten.
+- Halaman `/pay/:id` yang sudah berstatus `PAID` akan **tetap berstatus LUNAS** saat di-refresh atau dibuka kembali di kemudian hari.
+
+### 5. 🚀 Tautan Pengalihan Otomatis (OP Redirect ala Midtrans)
+Setelah pembayaran lunas, pelanggan otomatis dialihkan ke `redirect_url` dengan parameter status lengkap:
 ```
-https://tokosaya.com/finish?order_id=ORD-9981&status_code=200&transaction_status=settlement&payment_type=qris&gross_amount=10001.00&payment_id=YURI-AB12CD&transaction_id=TX-892182
+https://tokosaya.com/finish?order_id=INV-9901&status_code=200&transaction_status=settlement&payment_type=qris&gross_amount=10001.00&payment_id=YURI-AB12CD&transaction_id=TX-892182
 ```
-Aplikasi toko online Anda bisa langsung membaca query parameter tersebut dan mengaktifkan produk digital seketika!
 
-### 4. 🔔 Webhook HTTP 100% Identik Midtrans
-- Notifikasi status otomatis dikirimkan ke `webhook_url` toko Anda saat pembayaran diterima (`settlement`) atau kedaluwarsa (`expire`).
-- Format signature SHA-512 identik dengan Midtrans:
+### 6. 🔔 Webhook HTTP POST 100% Identik Midtrans
+- Format notifikasi dan kalkulasi signature identik dengan standar Midtrans:
   $$\text{signature\_key} = \text{SHA512}(\text{order\_id} + \text{status\_code} + \text{gross\_amount} + \text{ServerKey})$$
-
-### 5. 🔊 Soundbox Realtime & Pop-up Anime
-- Soundbox berbasis browser: memutar audio *"Cute Arigato"* saat transfer masuk.
-- Pop-up modal selebrasi lucu karakter Marin Kitagawa dengan hujan konfeti (*Canvas Confetti*).
-- Dilengkapi tombol kendali suara (Mute / Unmute) di bilah navigasi pelanggan.
-
-### 6. 🔒 Keamanan Berlapis (Security Hardening)
-- **Zero Fingerprinting**: Header `x-powered-by: Express` dinonaktifkan sepenuhnya.
-- **Security Headers**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection`, dan `Referrer-Policy`.
-- **In-Memory Rate Limiting**: Perlindungan terhadap brute-force login admin (maks 10 percobaan per 5 menit) dan spam API pembuatan transaksi (maks 60 trx/menit).
-- **Sanitasi Input Ketat**: Filter tag HTML berbahaya dan validasi URL skema HTTP/HTTPS.
+- Kompatibel langsung dengan modul penerima notifikasi Midtrans pada berbagai framework web.
 
 ---
 
 ## 🏰 Arsitektur Keamanan Dual-Port
 
-YuriPay menggunakan dua server Express yang berjalan secara simultan pada port yang terisolasi:
+YuriPay memisahkan lalu lintas jaringan menjadi dua zona keamanan terisolasi:
 
 ```
-                    ┌──────────────────────────────────────────────┐
-                    │               INTERNET / CLIENT              │
-                    └──────────────────────┬───────────────────────┘
-                                           │
-                    ┌──────────────────────┴───────────────────────┐
-                    │      PORT FORWARDING / NGINX PROXY           │
-                    └──────────────┬────────────────┬──────────────┘
-                                   │                │
-             [PORT 3000]           │                │          [PORT 3001]
-             INTERNAL / ADMIN      │                │          CUSTOMER CHECKOUT
-                                   │                │
-    ┌──────────────────────────────▼───┐        ┌───▼──────────────────────────────┐
-    │  📊 Dashboard Kasir & Admin      │        │  💳 Halaman Checkout (/pay/:id)  │
-    │  🔐 Password & Session Guard     │        │  🌐 Public Create Payment API    │
-    │  📜 Riwayat Mutasi GoBiz         │        │  ⚡ Public Polling Status        │
-    │  📖 Swagger UI Docs (/docs)      │        │  🚫 TIDAK ADA AKSES KE ADMIN     │
-    │  🛠️ Webhook Delivery Inspector   │        │  🚫 TIDAK ADA TOKEN / SESI GOBIZ │
-    └──────────────────┬───────────────┘        └───┬──────────────────────────────┘
-                       │                            │
-                       └──────────────┬─────────────┘
-                                      │
-                       ┌──────────────▼─────────────┐
-                       │   SQLite (WAL Mode) &      │
-                       │   GoPay Polling Daemon     │
-                       └──────────────┬─────────────┘
-                                      │
-                       ┌──────────────▼─────────────┐
-                       │   GoBiz / GoPay API Cloud  │
-                       └────────────────────────────┘
+                            ┌────────────────────────┐
+                            │    LALU LINTAS WEB     │
+                            └───────────┬────────────┘
+                                        │
+             ┌──────────────────────────┴──────────────────────────┐
+             │                                                     │
+     [PORT 3000] INTERNAL                                  [PORT 3001] PUBLIK
+┌────────────────────────────┐                        ┌────────────────────────────┐
+│ 📊 Dashboard Kasir & Admin │                        │ 💳 Customer Checkout       │
+│ 🔐 Login Email & Password  │                        │ 🌐 Public Create Payment   │
+│ 📜 Log Mutasi GoBiz        │                        │ ⚡ Public Status Poller    │
+│ 📖 Swagger UI Docs         │                        │ 🚫 Zero Access ke Token    │
+│ 🛠️ Webhook Inspector       │                        │ 🚫 Tanpa Middleware Sesi   │
+└────────────────────────────┘                        └────────────────────────────┘
 ```
-
-1. **Port 3000 (Admin Dashboard & Kasir)**:
-   - Terproteksi login email & password (`ADMIN_EMAIL` & `ADMIN_PASSWORD`).
-   - Menyediakan live feed mutasi, statistik omset harian, log pengiriman webhook, dan Swagger UI.
-2. **Port 3001 (Customer Checkout Gateway)**:
-   - Khusus diakses oleh pembeli umum untuk melihat QRIS dan melakukan pembayaran.
-   - Bersih dari sesi admin, tidak dapat mengakses endpoint internal, dan bebas dari risiko kebocoran token GoBiz.
 
 ---
 
-## 📱 Panduan Login GoBiz Merchant
+## 📱 Otentikasi Akun GoBiz Merchant
 
-YuriPay menyertakan CLI interaktif resmi untuk mendapatkan sesi token dari GoBiz:
+YuriPay menyediakan alat bantu terminal interaktif untuk otentikasi resmi akun GoBiz Anda:
 
-### Langkah 1: Jalankan CLI Login
 ```bash
 npm run login
 ```
-*atau:*
-```bash
-node login.js
-```
 
-### Langkah 2: Masukkan Nomor HP Merchant
-- Ketik nomor ponsel Anda yang terdaftar pada akun GoBiz / GoFood (contoh: `085119772671`).
-- Sistem YuriPay akan menghubungi server resmi GoBiz untuk mengirimkan kode OTP.
-
-### Langkah 3: Verifikasi Kode OTP (4 Digit)
-- Buka SMS atau pesan WhatsApp dari Gojek / GoBiz.
-- Masukkan 4 digit angka OTP yang diterima ke terminal.
-
-### Langkah 4: Selesai!
-- Sistem secara otomatis memverifikasi OTP, mengambil profil outlet merchant, dan menyimpan token ke dalam file:
-  `📂 .GOPAY_SESI_JANGAN_DIHAPUS.json`
-- YuriPay memiliki fitur **auto-refresh token**, sehingga sesi akan diperpanjang secara otomatis selama akun Anda aktif.
+1. Masukkan nomor ponsel yang terdaftar aktif di aplikasi GoBiz / GoFood Merchant (contoh: `085119772671`).
+2. Masukkan 4 digit kode OTP yang diterima melalui SMS atau WhatsApp dari Gojek.
+3. Sesi token akan diekstraksi dan disimpan secara otomatis ke dalam file terproteksi:
+   `📂 .GOPAY_SESI_JANGAN_DIHAPUS.json`
+4. YuriPay memiliki sistem **auto-refresh token** yang memperbarui akses token secara berkala sebelum kedaluwarsa.
 
 ---
 
-## 🚀 Panduan Instalasi & Menjalankan
+## 🚀 Panduan Deployment Produksi
 
-### Persyaratan Sistem
-- **Node.js**: Versi 18.x, 20.x, atau 22.x LTS
-- **NPM**: Versi 9.x ke atas
-- **Build Tools**: `python3`, `make`, `g++` (untuk kompilasi SQLite)
+### Metode 1: Deployment di cPanel Web Hosting (Setup Node.js App)
 
-### 1. Kloning Repositori
-```bash
-git clone https://github.com/myzert/yuripay.git
-cd yuripay
-```
+Banyak merchant menggunakan hosting cPanel dengan fitur CloudLinux Node.js Selector. Berikut panduan konfigurasinya:
 
-### 2. Instal Dependensi
-```bash
-npm install
-```
-
-### 3. Konfigurasi File Environment
-Salin template konfigurasi `.env.example` menjadi `.env`:
-```bash
-cp .env.example .env
-```
-Buka file `.env` dan sesuaikan pengaturan toko serta kredensial admin.
-
-### 4. Jalankan Server
-```bash
-npm start
-```
-
-Akses layanan di browser:
-- **Kasir & Admin**: [http://localhost:3000](http://localhost:3000)
-- **Customer Checkout**: [http://localhost:3001/pay/:id](http://localhost:3001)
-- **Dokumentasi API Swagger**: [http://localhost:3000/docs](http://localhost:3000/docs)
+1. **Masuk ke cPanel** &rarr; Buka menu **Setup Node.js App**.
+2. Klik tombol **Create Application**:
+   - **Node.js version**: Pilih versi `18.x`, `20.x`, atau `22.x`.
+   - **Application mode**: Pilih `Production`.
+   - **Application root**: Isi nama folder, misalnya `yuripay`.
+   - **Application startup file**: Isi `server.js`.
+3. Unggah seluruh berkas proyek YuriPay ke folder `yuripay` (kecuali folder `node_modules`).
+4. Klik **Run NPM Install** pada panel cPanel atau jalankan via Terminal cPanel:
+   ```bash
+   npm install --production
+   ```
+5. Buka Terminal cPanel, masuk ke folder aplikasi dan jalankan otentikasi GoBiz:
+   ```bash
+   cd yuripay
+   node login.js
+   ```
+6. Tambahkan konfigurasi environment pada bagian **Environment Variables** di menu cPanel atau simpan file `.env`.
+7. Klik **Restart Application**. Layanan YuriPay Anda kini aktif secara stateful di cPanel!
 
 ---
 
-## 🐳 Panduan Deployment Produksi
+### Metode 2: Deployment di Linux VPS (Ubuntu / Debian) dengan PM2 & Nginx
 
-### Opsi A: Deployment dengan Docker & Docker Compose (Direkomendasikan)
-
-1. Pastikan Docker dan Docker Compose telah terpasang di VPS Anda:
+1. **Pasang Dependensi Sistem**:
    ```bash
-   docker --version
-   docker compose version
+   sudo apt update && sudo apt install -y nodejs npm git build-essential sqlite3
+   sudo npm install -g pm2
    ```
 
-2. Jalankan container di latar belakang:
-   ```bash
-   docker compose up -d --build
-   ```
-
-3. Cek status container dan log:
-   ```bash
-   docker compose ps
-   docker compose logs -f
-   ```
-
-4. Menghentikan container:
-   ```bash
-   docker compose down
-   ```
-
----
-
-### Opsi B: Deployment dengan PM2 di Linux VPS (Ubuntu / Debian)
-
-1. Pasang PM2 secara global:
-   ```bash
-   npm install -g pm2
-   ```
-
-2. Jalankan YuriPay menggunakan file konfigurasi ekosistem:
-   ```bash
-   pm2 start ecosystem.config.js
-   ```
-
-3. Simpan daftar proses agar otomatis menyala saat VPS reboot:
-   ```bash
-   pm2 save
-   pm2 startup
-   ```
-
-4. Cek log realtime:
-   ```bash
-   pm2 logs yuripay-gateway
-   ```
-
----
-
-### Opsi C: Deployment di Termux (Android)
-
-YuriPay sangat ringan dan dapat dijalankan langsung di HP Android bekas sebagai server kasir 24 jam:
-
-1. Update paket Termux:
-   ```bash
-   pkg update && pkg upgrade -y
-   pkg install nodejs git python make clang -y
-   ```
-
-2. Kloning dan instal:
+2. **Kloning Repositori**:
    ```bash
    git clone https://github.com/myzert/yuripay.git
    cd yuripay
-   npm install
+   npm install --production
    cp .env.example .env
    ```
 
-3. Login GoBiz:
+3. **Login GoBiz**:
    ```bash
    npm run login
    ```
 
-4. Jalankan server:
+4. **Jalankan via PM2**:
    ```bash
-   npm start
+   pm2 start ecosystem.config.js
+   pm2 save
+   pm2 startup
    ```
+
+5. **Konfigurasi Reverse Proxy Nginx (Opsional)**:
+   ```nginx
+   server {
+       server_name bayar.tokosaya.com;
+
+       location / {
+           proxy_pass http://127.0.0.1:3001;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection 'upgrade';
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_cache_bypass $http_upgrade;
+       }
+   }
+   ```
+
+---
+
+### Metode 3: Deployment dengan Docker & Docker Compose
+
+```bash
+# Build dan jalankan container di latar belakang
+docker compose up -d --build
+
+# Periksa status container
+docker compose ps
+
+# Membaca log transaksi realtime
+docker compose logs -f
+```
+
+---
+
+### Metode 4: Deployment di Termux (Android OS)
+
+```bash
+pkg update && pkg upgrade -y
+pkg install nodejs git python make clang sqlite -y
+git clone https://github.com/myzert/yuripay.git
+cd yuripay
+npm install
+cp .env.example .env
+npm run login
+npm start
+```
 
 ---
 
 ## ⚙️ Konfigurasi Environment (.env)
 
-| Variabel | Tipe | Contoh / Default | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `DASHBOARD_PORT` | Integer | `3000` | Port untuk Dashboard Kasir, Admin, dan Swagger UI. |
-| `PAYMENT_PORT` | Integer | `3001` | Port publik untuk halaman checkout customer (`/pay/:id`). |
-| `STORE_NAME` | String | `YuriDev` | Nama toko yang ditampilkan pada struk dan checkout. |
-| `APP_NAME` | String | `YuriPay` | Nama aplikasi payment gateway. |
-| `API_KEY` | String | `yuripay_live_secret_key` | Kunci otentikasi API / Server Key untuk verifikasi webhook. |
-| `ADMIN_EMAIL` | String | `admin@example.com` | Email login panel admin kasir. |
-| `ADMIN_PASSWORD` | String | `your_secure_password` | Kata sandi login panel admin kasir. |
-| `SESSION_SECRET` | String | `random_string_secret` | Kunci enkripsi cookie sesi Express. |
-| `GOPAY_MERCHANT_ID` | String | `G123456789` | ID Merchant GoBiz Anda. |
-| `QRIS_STATIC` | String | `000201010211...63042A62` | String QRIS Statis resmi dari GoBiz / GoFood. |
-| `MIN_NOMINAL` | Integer | `50` | Batas nominal pembayaran terkecil (Rupiah). |
-| `TRANSACTION_TIMEOUT_MINUTES` | Integer | `10` | Durasi batas waktu pembayaran (menit). |
+| Variabel | Tipe | Wajib | Contoh / Default | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- |
+| `DASHBOARD_PORT` | Integer | Ya | `3000` | Port listen dashboard kasir, admin, dan Swagger UI. |
+| `PAYMENT_PORT` | Integer | Ya | `3001` | Port listen publik untuk checkout pelanggan (`/pay/:id`). |
+| `STORE_NAME` | String | Ya | `YuriDev` | Nama toko merchant yang tertera pada invoice. |
+| `APP_NAME` | String | Ya | `YURIPAY by myzert` | Nama resmi aplikasi payment gateway. |
+| `STORE_LOGO_URL` | String | Tidak | `https://tokosaya.com/logo.png` | URL / path gambar logo kustom merchant. |
+| `DEFAULT_SUCCESS_THEME`| String | Ya | `anime` | Tema default pembayaran: `anime` atau `default`. |
+| `API_KEY` | String | Ya | `yuripay_live_key_xxx` | Kunci server rahasia untuk kalkulasi signature SHA-512. |
+| `ADMIN_EMAIL` | String | Ya | `admin@example.com` | Email login panel kontrol kasir. |
+| `ADMIN_PASSWORD` | String | Ya | `your_secure_password` | Kata sandi login panel kontrol kasir. |
+| `SESSION_SECRET` | String | Ya | `random_secret_hash` | Kunci enkripsi cookie sesi Express. |
+| `GOPAY_MERCHANT_ID` | String | Ya | `G123456789` | ID Merchant GoBiz Anda. |
+| `QRIS_STATIC` | String | Ya | `000201010211...63042A62` | String QRIS Statis resmi dari aplikasi GoBiz. |
+| `MIN_NOMINAL` | Integer | Ya | `50` | Batas pembayaran minimum (Rupiah). |
+| `TRANSACTION_TIMEOUT_MINUTES` | Integer | Ya | `10` | Batas waktu berlakunya QRIS (menit). |
 
 ---
 
-## 🔌 Dokumentasi API & Integrasi Midtrans
+## 🔌 Spesifikasi API & Integrasi Midtrans
 
-### 1. Membuat Transaksi Baru (Create Payment)
+### 1. Membuat Tagihan Pembayaran (Create Payment)
 
-- **Endpoint**: `POST http://localhost:3001/api/create-payment` (atau Port 3000)
+- **URL**: `POST /api/create-payment` (Port 3001 atau Port 3000)
 - **Headers**: `Content-Type: application/json`
 
-#### Request Body:
+#### Payload Request:
 ```json
 {
   "amount": 10000,
   "order_id": "INV-20261026-001",
-  "custom_name": "Paket VIP Member 1 Bulan",
-  "redirect_url": "https://tokosaya.com/pembayaran/sukses",
+  "custom_name": "Langganan Premium 1 Bulan",
+  "redirect_url": "https://tokosaya.com/finish",
   "webhook_url": "https://tokosaya.com/api/midtrans-webhook",
+  "success_theme": "default",
   "use_unique_code": true
 }
 ```
 
-#### Response Sukses (HTTP 200):
+#### Payload Response (HTTP 200):
 ```json
 {
   "success": true,
@@ -355,11 +347,12 @@ YuriPay sangat ringan dan dapat dijalankan langsung di HP Android bekas sebagai 
     "payment_id": "YURI-X89KLA2",
     "order_id": "INV-20261026-001",
     "amount": 10087,
-    "custom_name": "Paket VIP Member 1 Bulan",
+    "custom_name": "Langganan Premium 1 Bulan",
     "payment_url": "http://localhost:3001/pay/YURI-X89KLA2",
-    "qr_image": "data:image/png;base64,iVBORw0KGgoAAAANSUh...",
+    "qr_image": "data:image/png;base64,iVBORw0KGgo...",
     "status": "PENDING",
-    "redirect_url": "https://tokosaya.com/pembayaran/sukses",
+    "success_theme": "default",
+    "redirect_url": "https://tokosaya.com/finish",
     "webhook_url": "https://tokosaya.com/api/midtrans-webhook",
     "created_at": "2026-10-26T08:00:00.000Z",
     "expires_at": "2026-10-26T08:10:00.000Z",
@@ -370,9 +363,9 @@ YuriPay sangat ringan dan dapat dijalankan langsung di HP Android bekas sebagai 
 
 ---
 
-### 2. Format Webhook HTTP POST (Midtrans Identical)
+### 2. Notifikasi Webhook HTTP POST (Midtrans Identical)
 
-Saat pembayaran berhasil diselesaikan, YuriPay akan mengirimkan notifikasi HTTP POST ke `webhook_url` Anda dengan format payload berikut:
+Saat pembayaran sukses terverifikasi, YuriPay mengirimkan HTTP POST dengan payload berikut:
 
 ```json
 {
@@ -381,7 +374,7 @@ Saat pembayaran berhasil diselesaikan, YuriPay akan mengirimkan notifikasi HTTP 
   "transaction_id": "TX-99812401",
   "status_message": "YuriPay payment settlement successfully verified",
   "status_code": "200",
-  "signature_key": "d7a8f9c1b2e3...",
+  "signature_key": "d7a8f9c1b2e3456789abcdef...",
   "payment_type": "qris",
   "order_id": "INV-20261026-001",
   "merchant_id": "G538138242",
@@ -391,49 +384,50 @@ Saat pembayaran berhasil diselesaikan, YuriPay akan mengirimkan notifikasi HTTP 
 }
 ```
 
-#### Cara Verifikasi Signature di PHP:
+#### Verifikasi Signature Key di PHP (Laravel / Native):
 ```php
-$json = file_get_contents('php://input');
-$data = json_decode($json, true);
+<?php
+$rawPayload = file_get_contents('php://input');
+$notification = json_decode($rawPayload, true);
 
-$orderId = $data['order_id'];
-$statusCode = $data['status_code'];
-$grossAmount = $data['gross_amount'];
-$serverKey = 'yuripay_live_secret_key'; // Sesuai API_KEY di .env
+$orderId = $notification['order_id'];
+$statusCode = $notification['status_code'];
+$grossAmount = $notification['gross_amount'];
+$serverKey = 'yuripay_live_key_9981248712'; // Sesuai API_KEY di .env
 
-$expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+$computedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
 
-if ($data['signature_key'] === $expectedSignature) {
-    if ($data['transaction_status'] === 'settlement') {
-        // Pembayaran LUNAS! Aktifkan pesanan customer.
+if ($notification['signature_key'] === $computedSignature) {
+    if ($notification['transaction_status'] === 'settlement') {
+        // Pembayaran Berhasil! Berikan produk/layanan ke pengguna.
     }
     http_response_code(200);
     echo json_encode(['status' => 'OK']);
 } else {
     http_response_code(403);
-    echo "Invalid Signature";
+    echo "Invalid Signature Key";
 }
 ```
 
-#### Cara Verifikasi Signature di Node.js:
+#### Verifikasi Signature Key di Node.js (Express):
 ```javascript
 const crypto = require('crypto');
 
 app.post('/api/midtrans-webhook', (req, res) => {
     const { order_id, status_code, gross_amount, signature_key, transaction_status } = req.body;
-    const serverKey = process.env.API_KEY || 'yuripay_live_secret_key';
+    const serverKey = process.env.API_KEY || 'yuripay_live_key_9981248712';
 
-    const payload = `${order_id}${status_code}${gross_amount}${serverKey}`;
-    const expectedSignature = crypto.createHash('sha512').update(payload).digest('hex');
+    const rawString = `${order_id}${status_code}${gross_amount}${serverKey}`;
+    const computedSignature = crypto.createHash('sha512').update(rawString).digest('hex');
 
-    if (signature_key === expectedSignature) {
+    if (signature_key === computedSignature) {
         if (transaction_status === 'settlement') {
-            console.log(`[LUNAS] Pesanan ${order_id} berhasil diverifikasi!`);
+            console.log(`[PAID] Tagihan ${order_id} lunas terverifikasi!`);
         }
         return res.status(200).json({ status: 'OK' });
     }
 
-    return res.status(403).json({ error: 'Invalid Signature' });
+    return res.status(403).json({ error: 'Signature Mismatch' });
 });
 ```
 
@@ -441,46 +435,59 @@ app.post('/api/midtrans-webhook', (req, res) => {
 
 ## 📖 Dokumentasi Swagger UI
 
-YuriPay menyediakan dokumentasi interaktif berbasis spesifikasi **OpenAPI 3.0**:
-- **Swagger UI**: Buka browser di [http://localhost:3000/docs](http://localhost:3000/docs) (atau port 3001).
-- **Spesifikasi JSON**: [http://localhost:3000/swagger.json](http://localhost:3000/swagger.json).
-- Anda dapat menguji seluruh endpoint secara langsung melalui fitur *"Try it out"* tanpa memerlukan Postman!
+YuriPay menyertakan dokumentasi antarmuka interaktif **OpenAPI 3.0**:
+- **Swagger UI**: [http://localhost:3000/docs](http://localhost:3000/docs) (atau Port 3001)
+- **OpenAPI JSON Spec**: [http://localhost:3000/swagger.json](http://localhost:3000/swagger.json)
+- Dilengkapi fitur pengujian langsung (*Try it out*) untuk seluruh endpoint REST API.
 
 ---
 
-## ❓ FAQ & Pemecahan Masalah
+## ❓ Pertanyaan Umum (FAQ)
 
 <details>
-<summary><strong>1. Berapa lama token sesi GoBiz bertahan?</strong></summary>
-<p>Token sesi GoBiz bertahan sekitar 30 hari. YuriPay secara otomatis memperbarui token akses di latar belakang sebelum kedaluwarsa. Jika sesi terputus (misalnya logout dari aplikasi HP), cukup jalankan kembali <code>npm run login</code>.</p>
+<summary><strong>1. Mengapa YuriPay tidak dapat di-deploy di Vercel?</strong></summary>
+<p>Vercel menggunakan arsitektur serverless function yang membekukan (freeze) container seketika setelah respons HTTP selesai dikirim. Akibatnya, background polling daemon yang bertugas memeriksa mutasi GoPay akan mati seketika. Selain itu, filesystem serverless bersifat sementara (ephemeral), sehingga file database SQLite dan token sesi akan terhapus secara acak.</p>
 </details>
 
 <details>
-<summary><strong>2. Di mana saya bisa mendapatkan string QRIS_STATIC?</strong></summary>
-<p>Buka aplikasi <strong>GoBiz</strong> di ponsel Anda &rarr; Pilih menu <strong>Lainnya / QRIS</strong> &rarr; Tampilkan Kode QR Toko Anda &rarr; Pindai menggunakan pembaca QR scanner biasa (misalnya Google Lens). Teks string yang muncul (diawali <code>000201010211...</code>) adalah kode QRIS Statis Anda.</p>
+<summary><strong>2. Berapa lama token sesi GoBiz bertahan dan apakah perlu login berulang kali?</strong></summary>
+<p>Token sesi GoBiz bertahan hingga 30 hari. YuriPay memiliki fitur <em>auto-refresh token</em> yang secara otomatis memperbarui token akses di latar belakang sebelum masa berlakunya habis. Login ulang (<code>npm run login</code>) hanya diperlukan jika Anda sengaja melakukan logout dari aplikasi ponsel GoBiz.</p>
 </details>
 
 <details>
-<summary><strong>3. Apakah saya bisa deploy di Vercel atau Netlify?</strong></summary>
-<p><strong>Tidak bisa.</strong> Seperti yang dijelaskan pada bagian arsitektur di atas, YuriPay membutuhkan proses daemon jangka panjang untuk mengecek mutasi GoPay setiap detik dan menulis ke SQLite lokal. Gunakan VPS, Docker, PM2, atau Termux.</p>
+<summary><strong>3. Di mana letak string QRIS_STATIC toko saya?</strong></summary>
+<p>Buka aplikasi <strong>GoBiz</strong> di ponsel Anda &rarr; Pilih menu <strong>Lainnya / QRIS</strong> &rarr; Tampilkan QR Toko Anda &rarr; Scan gambar QR tersebut menggunakan pemindai QR biasa (misal Google Lens). Teks string panjang yang diawali <code>000201010211...6304XXXX</code> adalah kode QRIS Statis Anda.</p>
 </details>
 
 <details>
 <summary><strong>4. Mengapa nominal pembayaran bertambah Rp 1 perak?</strong></summary>
-<p>Tambahan Rp 1 perak adalah <em>Kode Unik Dinamis</em>. Karena QRIS GoBiz menerima pembayaran dari ratusan bank & e-wallet tanpa nama akun pengirim yang seragam, kode unik ini memastikan bahwa transfer yang masuk tepat cocok dengan pesanan pelanggan secara otomatis 100%.</p>
+<p>Penambahan Rp 1 perak adalah kode unik verifikasi otomatis. Karena sistem QRIS menerima transfer dari berbagai aplikasi perbankan nasional tanpa identitas nama pengirim yang seragam, kode unik ini menjadi acuan mutlak bagi sistem untuk mencocokkan pembayaran dengan pesanan pelanggan secara 100% presisi.</p>
 </details>
 
 ---
 
-## 📄 Lisensi & Kontribusi
+## 📄 Lisensi & Hak Cipta
 
-Proyek ini dirilis di bawah lisensi terbuka [ISC License](LICENSE).
+Perangkat lunak ini dilisensikan di bawah lisensi resmi **[Apache License 2.0](LICENSE)**.
 
-Kontribusi, pelaporan bug, dan saran fitur sangat kami hargai! Silakan buat **Pull Request** atau ajukan **Issue** di repositori GitHub kami:
-👉 **[https://github.com/myzert/yuripay](https://github.com/myzert/yuripay)**
+```
+Copyright 2026 myzert (YuriDev)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
 
 ---
 
 <p align="center">
-  Dibuat dengan ❤️ untuk komunitas open source oleh <strong>YuriDev</strong>.
+  Dikembangkan dengan dedikasi untuk ekosistem open-source Indonesia oleh <strong>myzert (YuriDev)</strong>.
 </p>

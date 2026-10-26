@@ -11,7 +11,9 @@ const { getSwaggerSpec } = require('./src/gateway/swaggerDoc');
 const DASHBOARD_PORT = parseInt(process.env.DASHBOARD_PORT || '3000', 10);
 const PAYMENT_PORT = parseInt(process.env.PAYMENT_PORT || '3001', 10);
 const STORE_NAME = process.env.STORE_NAME || 'YuriDev';
-const APP_NAME = process.env.APP_NAME || 'YuriPay';
+const APP_NAME = process.env.APP_NAME || 'YURIPAY by myzert';
+const STORE_LOGO_URL = process.env.STORE_LOGO_URL || '';
+const DEFAULT_SUCCESS_THEME = process.env.DEFAULT_SUCCESS_THEME || 'anime';
 const API_KEY = process.env.API_KEY || 'yuripay_live_key_9981248712';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'zertcihuy@gmail.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'zertcihuy@admin#123';
@@ -234,6 +236,9 @@ async function handleCreatePayment(req, res) {
             }
         }
 
+        const rawSuccessTheme = req.body.success_theme || req.body.successTheme || DEFAULT_SUCCESS_THEME;
+        const successTheme = String(rawSuccessTheme).toLowerCase() === 'default' ? 'default' : 'anime';
+
         // Idempotency: If order_id exists and payment is already created,
         // it returns the exact existing payment rather than creating a new one!
         const payment = await paymentStore.createPayment({
@@ -242,6 +247,7 @@ async function handleCreatePayment(req, res) {
             customName,
             redirectUrl,
             webhookUrl,
+            successTheme,
             useUniqueCode
         });
 
@@ -270,6 +276,7 @@ dashboardApp.get('/login', (req, res) => {
     res.render('login', {
         appName: APP_NAME,
         storeName: STORE_NAME,
+        storeLogoUrl: STORE_LOGO_URL,
         error: null,
         email: ''
     });
@@ -286,6 +293,7 @@ dashboardApp.post('/login', loginRateLimiter, (req, res) => {
     res.render('login', {
         appName: APP_NAME,
         storeName: STORE_NAME,
+        storeLogoUrl: STORE_LOGO_URL,
         error: 'Email atau Kata Sandi admin salah! Silakan coba lagi.',
         email: email || ''
     });
@@ -312,6 +320,8 @@ dashboardApp.get('/', requireAdminAuth, (req, res) => {
     res.render('index', {
         storeName: STORE_NAME,
         appName: APP_NAME,
+        storeLogoUrl: STORE_LOGO_URL,
+        defaultSuccessTheme: DEFAULT_SUCCESS_THEME,
         apiKey: API_KEY,
         adminEmail: req.session.adminEmail || ADMIN_EMAIL,
         paymentPort: PAYMENT_PORT,
@@ -421,6 +431,7 @@ paymentApp.get('/pay/:id', async (req, res) => {
             error: 'Tagihan pembayaran tidak ditemukan atau sudah dihapus.',
             storeName: STORE_NAME,
             appName: APP_NAME,
+            storeLogoUrl: STORE_LOGO_URL,
             payment: null,
             formatRupiah
         });
@@ -444,6 +455,7 @@ paymentApp.get('/pay/:id', async (req, res) => {
         error: null,
         storeName: STORE_NAME,
         appName: APP_NAME,
+        storeLogoUrl: STORE_LOGO_URL,
         payment: publicPayment,
         formatRupiah
     });

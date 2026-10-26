@@ -37,9 +37,13 @@
     <!-- Top Bar with Theme Toggle -->
     <header class="px-6 py-4 flex items-center justify-between max-w-5xl mx-auto w-full">
         <div class="flex items-center space-x-2.5">
-            <div class="w-9 h-9 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-base shadow-md shadow-blue-500/20">
-                <i class="fa-solid fa-qrcode"></i>
-            </div>
+            <% if (typeof storeLogoUrl !== 'undefined' && storeLogoUrl) { %>
+                <img src="<%= storeLogoUrl %>" alt="<%= storeName %>" class="w-9 h-9 rounded-2xl object-cover shadow-md border border-slate-200 dark:border-darkBorder">
+            <% } else { %>
+                <div class="w-9 h-9 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-base shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+            <% } %>
             <span class="font-black text-lg text-slate-900 dark:text-white"><%= appName %></span>
             <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-googleBlue dark:text-sky-400 font-bold border border-blue-200 dark:border-blue-900"><%= storeName %></span>
         </div>
