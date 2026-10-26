@@ -71,12 +71,22 @@
                 </div>
             </div>
 
-            <!-- Dark / Light Mode Switch -->
-            <button onclick="toggleDarkMode()" 
-                class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
-                title="Ganti Mode Tampilan">
-                <i id="theme-icon" class="fa-solid fa-moon"></i>
-            </button>
+            <!-- Action Buttons: Sound & Theme -->
+            <div class="flex items-center space-x-2">
+                <!-- Soundbox Mute/Unmute Toggle -->
+                <button id="sound-toggle-btn" onclick="toggleSound()" 
+                    class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-sky-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
+                    title="Aktifkan / Bisukan Notifikasi Suara">
+                    <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+
+                <!-- Dark / Light Mode Switch -->
+                <button onclick="toggleDarkMode()" 
+                    class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
+                    title="Ganti Mode Tampilan">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -180,6 +190,45 @@
                             <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Livin' Mandiri</span>
                             <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">BRImo</span>
                             <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Semua QRIS</span>
+                        </div>
+
+                        <!-- Collapsible Payment Guide -->
+                        <div class="mt-4 border border-slate-200 dark:border-darkBorder rounded-2xl overflow-hidden bg-slate-50/60 dark:bg-slate-800/40 text-left">
+                            <button type="button" onclick="toggleInstructions()" 
+                                class="w-full px-4 py-3 text-xs font-bold flex items-center justify-between text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-regular fa-circle-question text-googleBlue dark:text-sky-400"></i>
+                                    <span>Panduan Cara Pembayaran</span>
+                                </span>
+                                <i id="instruction-arrow" class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"></i>
+                            </button>
+                            <div id="instruction-content" class="hidden px-4 pb-3.5 text-[11px] text-slate-600 dark:text-slate-300 space-y-1.5 border-t border-slate-200/60 dark:border-slate-700/60 pt-2.5">
+                                <div class="flex items-start gap-2">
+                                    <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-googleBlue dark:text-sky-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                                    <p>Buka aplikasi m-Banking (BCA, Mandiri, BRI, BNI) atau E-Wallet (GoPay, DANA, OVO, ShopeePay).</p>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-googleBlue dark:text-sky-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                                    <p>Pilih menu <strong>Bayar / Scan QRIS</strong> dan arahkan kamera ke kode QR di atas.</p>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-googleBlue dark:text-sky-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                                    <p>Pastikan nominal total pembayaran sesuai tepat tanpa pembulatan.</p>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-googleBlue dark:text-sky-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">4</span>
+                                    <p>Selesaikan pembayaran dengan PIN Anda. Sistem YuriPay memverifikasi transaksi secara realtime dalam 2 detik!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security & Trust Indicators -->
+                        <div class="flex items-center justify-center gap-3 text-[11px] font-medium text-slate-400 dark:text-darkSubtext pt-3">
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-shield-check text-emerald-500"></i> Standar QRIS BI</span>
+                            <span>•</span>
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-lock text-sky-500"></i> Enkripsi 256-Bit</span>
+                            <span>•</span>
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-bolt text-amber-500"></i> Realtime Instant</span>
                         </div>
                     </div>
                 </div>
@@ -327,8 +376,33 @@
         const arigatoLocal = new Audio('/sounds/cute-arigato.mp3');
         const arigatoOnline = new Audio('https://www.myinstants.com/media/sounds/cute-arigato.mp3');
 
+        // Soundbox Mute Setting
+        let isMuted = localStorage.getItem('yuripay_sound_muted') === 'true';
+        function initSoundSetting() {
+            const icon = document.getElementById('sound-icon');
+            if (icon) {
+                icon.className = isMuted ? 'fa-solid fa-volume-xmark text-slate-400' : 'fa-solid fa-volume-high text-sky-500';
+            }
+        }
+        function toggleSound() {
+            isMuted = !isMuted;
+            localStorage.setItem('yuripay_sound_muted', isMuted ? 'true' : 'false');
+            initSoundSetting();
+        }
+        initSoundSetting();
+
+        // Collapsible instructions
+        function toggleInstructions() {
+            const content = document.getElementById('instruction-content');
+            const arrow = document.getElementById('instruction-arrow');
+            if (!content || !arrow) return;
+            const isHidden = content.classList.toggle('hidden');
+            arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
         // Play Cute Arigato Sound Only
         function playCuteSound() {
+            if (isMuted) return;
             arigatoLocal.currentTime = 0;
             arigatoLocal.play().catch(() => {
                 arigatoOnline.currentTime = 0;

@@ -19,6 +19,7 @@ package-lock.json
 
 # Logs & temp
 *.log
+logs/
 npm-debug.log*
 
 # Submodules or separate clones

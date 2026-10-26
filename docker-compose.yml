@@ -1,0 +1,30 @@
+version: '3.8'
+
+# ==============================================================================
+# ⚡ YuriPay - Docker Compose Configuration
+# ==============================================================================
+# Menjalankan YuriPay di VPS Linux / Cloud Container dengan persistensi penuh
+# untuk database SQLite dan file sesi GoBiz.
+# ==============================================================================
+
+services:
+  yuripay:
+    build: .
+    container_name: yuripay-gateway
+    restart: unless-stopped
+    ports:
+      # Port 3000: Admin Dashboard, Kasir, dan Swagger UI
+      - "3000:3000"
+      # Port 3001: Customer Checkout (/pay/:id) dan Public Create API
+      - "3001:3001"
+    env_file:
+      - .env
+    volumes:
+      # Persistent SQLite Database storage
+      - ./database:/app/database
+      # GoBiz Merchant Session Token File
+      - ./.GOPAY_SESI_JANGAN_DIHAPUS.json:/app/.GOPAY_SESI_JANGAN_DIHAPUS.json
+    environment:
+      - NODE_ENV=production
+      - DASHBOARD_PORT=3000
+      - PAYMENT_PORT=3001
