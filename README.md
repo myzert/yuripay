@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/QRIS-Bank%20Indonesia%20Standard-red?style=for-the-badge" alt="QRIS Standard" />
   <img src="https://img.shields.io/badge/Runtime-Stateful%20Only%20(VPS%20%7C%20cPanel%20%7C%20Docker)-success?style=for-the-badge" alt="Stateful Only" />
   <img src="https://img.shields.io/badge/Serverless-STRICTLY%20UNSUPPORTED-critical?style=for-the-badge" alt="No Serverless" />
-  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="Apache 2.0 License" />
+  <img src="https://img.shields.io/badge/License-ISC-blue?style=for-the-badge" alt="ISC License" />
 </p>
 
 ---
@@ -25,7 +25,7 @@
 > **PEMBERITAHUAN RESMI HUKUM:**
 > 1. **Proyek Komunitas Mandiri (Unofficial Project)**: **YURIPAY** adalah perangkat lunak sumber terbuka (*open source*) independen yang dikembangkan oleh **myzert** untuk tujuan penelitian, edukasi, dan integrasi kasir mandiri (*self-hosted gateway*). Perangkat lunak ini **TIDAK berafiliasi, didukung, disponsori, atau disetujui secara resmi oleh PT GoTo Gojek Tokopedia Tbk (Gojek / GoPay / GoBiz), Bank Indonesia, maupun Asosiasi Sistem Pembayaran Indonesia (ASPI)**.
 > 2. **Kepatuhan Pedagang (Merchant Compliance)**: Seluruh penggunaan API GoBiz dan pemrosesan dana operasional adalah tanggung jawab mutlak masing-masing pedagang (*merchant*) pemilik akun. Pengguna wajib mematuhi Syarat & Ketentuan Layanan GoBiz dan peraturan Bank Indonesia mengenai transaksi pembayaran QRIS (PADG No. 21/18/PADG/2019).
-> 3. **Tanpa Jaminan (No Warranty)**: Perangkat lunak ini disediakan di bawah lisensi resmi [Apache License 2.0](LICENSE) "sebagaimana adanya" (*as-is*) tanpa jaminan dalam bentuk apa pun, baik tersurat maupun tersirat.
+> 3. **Tanpa Jaminan (No Warranty)**: Perangkat lunak ini disediakan di bawah lisensi terbuka [ISC License](LICENSE) "sebagaimana adanya" (*as-is*) tanpa jaminan dalam bentuk apa pun, dan penulis dibebaskan dari segala bentuk tuntutan ganti rugi atau liabilitas operasional.
 
 ---
 
@@ -468,22 +468,24 @@ YuriPay menyertakan dokumentasi antarmuka interaktif **OpenAPI 3.0**:
 
 ## 📄 Lisensi & Hak Cipta
 
-Perangkat lunak ini dilisensikan di bawah lisensi resmi **[Apache License 2.0](LICENSE)**.
+Perangkat lunak ini dilisensikan di bawah lisensi terbuka resmi **[ISC License](LICENSE)**.
 
 ```
-Copyright 2026 myzert (YuriDev)
+ISC License
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Copyright (c) 2026 myzert (YuriDev)
 
-    http://www.apache.org/licenses/LICENSE-2.0
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
 ---
