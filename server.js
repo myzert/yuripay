@@ -314,7 +314,7 @@ dashboardApp.get('/logout', (req, res) => {
 dashboardApp.get('/', requireAdminAuth, (req, res) => {
     const session = gopayClient.getSessionInfo();
     const stats = paymentStore.getStats();
-    const recentPayments = paymentStore.getRecentPayments(15);
+    const recentPayments = paymentStore.getRecentPayments(100);
     const baseUrl = getPaymentBaseUrl(req);
 
     res.render('index', {
@@ -376,7 +376,7 @@ dashboardApp.get('/api/recent-mutations', requireAdminAuth, async (req, res) => 
 // Dashboard Live Stats & Transactions Table API
 dashboardApp.get('/api/dashboard-data', requireAdminAuth, (req, res) => {
     const stats = paymentStore.getStats();
-    const recent = paymentStore.getRecentPayments(20);
+    const recent = paymentStore.getRecentPayments(100);
     const webhookLogs = webhookEngine.getWebhookLogs(10);
     res.json({ success: true, stats, recent, webhookLogs });
 });

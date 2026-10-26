@@ -23,14 +23,7 @@
                         darkSubtext: '#94a3b8'
                     },
                     animation: {
-                        'pulse-fast': 'pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'scan': 'scanLine 3s ease-in-out infinite'
-                    },
-                    keyframes: {
-                        scanLine: {
-                            '0%, 100%': { transform: 'translateY(0%)', opacity: '0.2' },
-                            '50%': { transform: 'translateY(230px)', opacity: '0.9' }
-                        }
+                        'pulse-fast': 'pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     }
                 }
             }
@@ -223,9 +216,6 @@
                         <div class="corner-bracket corner-tr"></div>
                         <div class="corner-bracket corner-bl"></div>
                         <div class="corner-bracket corner-br"></div>
-
-                        <!-- Scan Line Animation -->
-                        <div id="scan-line" class="absolute left-6 right-6 top-6 h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent pointer-events-none animate-scan shadow-[0_0_8px_#38bdf8]"></div>
 
                         <!-- Official QRIS Header -->
                         <div class="flex items-center justify-between w-full px-2 mb-2">
@@ -771,7 +761,6 @@
             const checkBtn = document.getElementById('btn-check-manual');
             const checkBtnText = document.getElementById('check-btn-text');
             const expiredOverlay = document.getElementById('qr-expired-overlay');
-            const scanLine = document.getElementById('scan-line');
             const pingDot = document.getElementById('ping-dot');
 
             const now = Date.now();
@@ -836,9 +825,6 @@
                 }
                 if (pingDot) {
                     pingDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 inline-block';
-                }
-                if (scanLine) {
-                    scanLine.classList.add('hidden');
                 }
                 if (expiredOverlay) {
                     expiredOverlay.classList.remove('hidden');

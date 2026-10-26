@@ -124,57 +124,98 @@
     <!-- Main Container -->
     <main class="max-w-6xl w-full mx-auto p-4 sm:p-6 my-auto">
 
-        <!-- Top Statistics Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Omset Hari Ini</p>
-                    <h3 id="stat-volume" class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
-                        <%= formatRupiah(stats.todayVolume) %>
-                    </h3>
+        <!-- Top Statistics & Traffic Overview -->
+        <div class="mb-6 space-y-4">
+            <!-- 4 Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Omset -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Omset Hari Ini</p>
+                        <h3 id="stat-volume" class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
+                            <%= formatRupiah(stats.todayVolume) %>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Total Semua: <span id="stat-all-volume" class="font-bold"><%= formatRupiah(stats.allVolume) %></span></p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
                 </div>
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-wallet"></i>
+
+                <!-- Transaksi Sukses -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Transaksi Sukses (PAID)</p>
+                        <h3 id="stat-success" class="text-2xl font-black font-mono text-googleBlue dark:text-sky-400 mt-0.5">
+                            <%= stats.todaySuccess %> <span class="text-xs text-slate-400 font-normal">/ <%= stats.todayTotal %> Hari Ini</span>
+                        </h3>
+                        <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                            <i class="fa-solid fa-arrow-trend-up mr-0.5"></i>
+                            <span id="stat-success-rate"><%= stats.successRate %>%</span> Tingkat Sukses
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-googleBlue dark:text-sky-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+
+                <!-- Menunggu Pembayaran (Pending) -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Menunggu (PENDING)</p>
+                        <h3 id="stat-pending" class="text-2xl font-black font-mono text-amber-600 dark:text-amber-400 mt-0.5">
+                            <%= stats.todayPending %>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Total Aktif: <span id="stat-all-pending" class="font-bold"><%= stats.allPending %></span> antrean</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                </div>
+
+                <!-- Kedaluwarsa (Expired) -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Kedaluwarsa (EXPIRED)</p>
+                        <h3 id="stat-expired" class="text-2xl font-black font-mono text-slate-600 dark:text-slate-400 mt-0.5">
+                            <%= stats.todayExpired || 0 %>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Total Arsip: <span id="stat-all-expired" class="font-bold"><%= stats.allExpired || 0 %></span> batal</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Transaksi Berhasil</p>
-                    <h3 id="stat-success" class="text-2xl font-black font-mono text-googleBlue dark:text-sky-400 mt-0.5">
-                        <%= stats.todaySuccess %> / <%= stats.todayTotal %>
-                    </h3>
+            <!-- Traffic Ratio & Flow Bar -->
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm">
+                <div class="flex items-center justify-between text-xs mb-2">
+                    <span class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-simple text-googleBlue dark:text-sky-400"></i>
+                        <span>Visualisasi Traffic Status Transaksi</span>
+                    </span>
+                    <span class="text-[11px] font-mono text-slate-400" id="traffic-total-label">
+                        Total <%= stats.allTotal %> Transaksi Masuk
+                    </span>
                 </div>
-                <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-googleBlue dark:text-sky-400 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-circle-check"></i>
+                <!-- Multi-segment visual bar -->
+                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden flex shadow-inner">
+                    <div id="bar-success" class="bg-emerald-500 h-full transition-all duration-500" style="width: <%= stats.allTotal > 0 ? (stats.allSuccess / stats.allTotal * 100) : 50 %>%;" title="Sukses"></div>
+                    <div id="bar-pending" class="bg-amber-500 h-full transition-all duration-500" style="width: <%= stats.allTotal > 0 ? (stats.allPending / stats.allTotal * 100) : 30 %>%;" title="Pending"></div>
+                    <div id="bar-expired" class="bg-slate-400 dark:bg-slate-600 h-full transition-all duration-500" style="width: <%= stats.allTotal > 0 ? (stats.allExpired / stats.allTotal * 100) : 20 %>%;" title="Expired"></div>
                 </div>
-            </div>
-
-            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Payment Gateway</p>
-                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 flex items-center gap-1.5">
+                <!-- Legend -->
+                <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-500 dark:text-darkSubtext mt-2.5 pt-1">
+                    <div class="flex items-center gap-4">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Sukses: <strong id="legend-success" class="text-slate-800 dark:text-slate-200"><%= stats.allSuccess %></strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Pending: <strong id="legend-pending" class="text-slate-800 dark:text-slate-200"><%= stats.allPending %></strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-600"></span> Expired: <strong id="legend-expired" class="text-slate-800 dark:text-slate-200"><%= stats.allExpired %></strong></span>
+                    </div>
+                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                        <span>Port <%= paymentPort %> Aktif</span>
-                    </h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Midtrans Webhook & Redirect Ready</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-server"></i>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 border border-slate-200 dark:border-darkBorder shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider">Runtime Arsitektur</p>
-                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-microchip text-sky-500"></i>
-                        <span>Stateful Daemon</span>
-                    </h3>
-                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Non-Serverless • 24/7 Poller</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-shield-halved"></i>
+                        Realtime Auto-Sync
+                    </span>
                 </div>
             </div>
         </div>
@@ -387,22 +428,65 @@
 
                 </div>
 
-                <!-- RIWAYAT TRANSAKSI YURIPAY TABLE -->
+                <!-- PENGARSIPAN & RIWAYAT TRANSAKSI YURIPAY -->
                 <div class="bg-white dark:bg-darkCard rounded-3xl p-6 border border-slate-200 dark:border-darkBorder shadow-sm transition-colors duration-200">
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-darkBorder mb-3">
-                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                            <i class="fa-solid fa-clock-rotate-left text-googleBlue dark:text-sky-400"></i>
-                            <span>Riwayat Tagihan Dibuat</span>
-                        </span>
-                        <button onclick="refreshDashboardData()" class="text-[11px] text-googleBlue dark:text-sky-400 hover:underline font-semibold flex items-center gap-1">
-                            <i class="fa-solid fa-rotate"></i> Refresh
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-100 dark:border-darkBorder gap-3 mb-4">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-box-archive text-googleBlue dark:text-sky-400"></i>
+                                <span>Pengarsipan & Riwayat Tagihan</span>
+                            </h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Filter dan telusuri transaksi pending, sukses, maupun kedaluwarsa</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="refreshDashboardData()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition">
+                                <i class="fa-solid fa-rotate" id="refresh-icon"></i>
+                                <span>Sinkron Data</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status Filter Tabs (Semua, Sukses, Pending, Expired) -->
+                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3.5">
+                        <button type="button" onclick="filterArchiveStatus('ALL')" id="tab-status-all" 
+                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-googleBlue text-white shadow-sm transition flex items-center gap-1.5">
+                            <span>Semua</span>
+                            <span id="badge-count-all" class="px-1.5 py-0.5 rounded-full bg-white/20 text-[10px] font-mono leading-none"><%= stats.allTotal %></span>
+                        </button>
+                        <button type="button" onclick="filterArchiveStatus('PAID')" id="tab-status-paid" 
+                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span>Sukses (PAID)</span>
+                            <span id="badge-count-paid" class="px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono leading-none"><%= stats.allSuccess %></span>
+                        </button>
+                        <button type="button" onclick="filterArchiveStatus('PENDING')" id="tab-status-pending" 
+                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            <span>Menunggu (PENDING)</span>
+                            <span id="badge-count-pending" class="px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 text-[10px] font-mono leading-none"><%= stats.allPending %></span>
+                        </button>
+                        <button type="button" onclick="filterArchiveStatus('EXPIRED')" id="tab-status-expired" 
+                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                            <span>Kedaluwarsa (EXPIRED)</span>
+                            <span id="badge-count-expired" class="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-[10px] font-mono leading-none"><%= stats.allExpired %></span>
                         </button>
                     </div>
 
+                    <!-- Search Input Toolbar -->
+                    <div class="relative mb-3.5">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input type="text" id="archive-search" oninput="applyArchiveFilter()" placeholder="Cari nomor invoice, order ID, catatan pesanan, atau nominal..."
+                            class="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-googleBlue dark:focus:border-sky-500 transition">
+                    </div>
+
+                    <!-- Archiving Table -->
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead>
-                                <tr class="text-slate-400 dark:text-darkSubtext border-b border-slate-100 dark:border-darkBorder">
+                                <tr class="text-slate-400 dark:text-darkSubtext border-b border-slate-100 dark:border-darkBorder text-[11px]">
                                     <th class="pb-2">Invoice / Order</th>
                                     <th class="pb-2">Pesanan</th>
                                     <th class="pb-2">Nominal</th>
@@ -411,38 +495,14 @@
                                 </tr>
                             </thead>
                             <tbody id="transactions-table-body" class="divide-y divide-slate-100 dark:divide-darkBorder">
-                                <% if (recentPayments && recentPayments.length > 0) { %>
-                                    <% recentPayments.forEach(item => { %>
-                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                                            <td class="py-2.5 font-mono font-bold text-googleBlue dark:text-sky-400">
-                                                <%= item.id %>
-                                                <% if (item.order_id && item.order_id !== item.id) { %>
-                                                    <span class="block text-[10px] text-slate-400 font-mono font-normal"><%= item.order_id %></span>
-                                                <% } %>
-                                            </td>
-                                            <td class="py-2.5 text-slate-600 dark:text-slate-300 max-w-[130px] truncate"><%= item.custom_name %></td>
-                                            <td class="py-2.5 font-mono font-bold"><%= formatRupiah(item.total_amount) %></td>
-                                            <td class="py-2.5">
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold <%= item.status === 'PAID' ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400' : (item.status === 'PENDING' ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500') %>">
-                                                    <%= item.status %>
-                                                </span>
-                                            </td>
-                                            <td class="py-2.5 text-right">
-                                                <a href="<%= baseUrl %>/pay/<%= item.id %>" target="_blank" 
-                                                   class="text-[11px] text-googleBlue dark:text-sky-400 hover:underline font-bold inline-flex items-center gap-1">
-                                                    <span>Checkout</span>
-                                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    <% }) %>
-                                <% } else { %>
-                                    <tr>
-                                        <td colspan="5" class="py-4 text-center text-slate-400">Belum ada riwayat transaksi.</td>
-                                    </tr>
-                                <% } %>
+                                <!-- Populated dynamically by client script -->
                             </tbody>
                         </table>
+                    </div>
+
+                    <div id="archive-empty-state" class="hidden text-center py-8 text-slate-400 text-xs">
+                        <i class="fa-solid fa-inbox text-3xl mb-2 text-slate-300 dark:text-slate-600"></i>
+                        <p>Tidak ada transaksi yang cocok dengan filter pengarsipan.</p>
                     </div>
                 </div>
             </div>
@@ -777,6 +837,108 @@ def midtrans_webhook():
 
 
     <!-- ============================================== -->
+    <!-- DETAIL ARSIP TRANSAKSI MODAL                   -->
+    <!-- ============================================== -->
+    <div id="archive-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md hidden transition-all duration-300">
+        <div class="bg-white dark:bg-darkCard rounded-[32px] max-w-lg w-full p-6 sm:p-7 text-left shadow-2xl border border-slate-200 dark:border-darkBorder max-h-[90vh] overflow-y-auto scale-in">
+            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-darkBorder mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-googleBlue dark:text-sky-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>Detail Arsip Tagihan</span>
+                            <span id="detail-modal-status-badge"></span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 font-mono" id="detail-modal-invoice-id">YURI-XXXX</p>
+                    </div>
+                </div>
+                <button onclick="closeArchiveDetail()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Detail Content -->
+            <div class="space-y-3.5 text-xs">
+                <!-- Nominal Card -->
+                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Pembayaran</p>
+                    <h2 id="detail-modal-amount" class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 my-0.5">Rp 0</h2>
+                    <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/60 dark:border-slate-800 mt-2 font-mono">
+                        <span>Nominal Pokok: <strong id="detail-modal-base" class="text-slate-700 dark:text-slate-300">Rp 0</strong></span>
+                        <span>Kode Unik: <strong id="detail-modal-code" class="text-googleBlue dark:text-sky-400">+0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Fields Grid -->
+                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder space-y-2 font-mono text-[11px]">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 font-sans">Nomor Order:</span>
+                        <div class="flex items-center gap-1.5">
+                            <span id="detail-modal-order-id" class="font-bold text-slate-800 dark:text-slate-200">-</span>
+                            <button onclick="copyDetailText('detail-modal-order-id')" class="text-slate-400 hover:text-sky-500" title="Salin Order ID"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 font-sans">Pesanan / Memo:</span>
+                        <span id="detail-modal-memo" class="font-sans font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 font-sans">Waktu Dibuat:</span>
+                        <span id="detail-modal-created" class="text-slate-700 dark:text-slate-300">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 font-sans">Batas Kedaluwarsa:</span>
+                        <span id="detail-modal-expires" class="text-slate-700 dark:text-slate-300">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 font-sans">Waktu Lunas (Settlement):</span>
+                        <span id="detail-modal-paid" class="font-bold text-emerald-600 dark:text-emerald-400">-</span>
+                    </div>
+                </div>
+
+                <!-- Webhook Status -->
+                <div class="p-3 rounded-2xl bg-blue-50/50 dark:bg-slate-900 border border-blue-200/80 dark:border-darkBorder text-[11px]">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-sans">
+                            <i class="fa-solid fa-paper-plane text-sky-500"></i>
+                            <span>Webhook Midtrans:</span>
+                        </span>
+                        <span id="detail-modal-webhook-status" class="px-2 py-0.5 rounded-full text-[10px] font-bold"></span>
+                    </div>
+                    <p id="detail-modal-webhook-url" class="font-mono text-slate-500 truncate text-[10px]">-</p>
+                </div>
+
+                <!-- Raw QRIS Payload Box -->
+                <div id="detail-modal-qris-box" class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-darkBorder">
+                    <div class="flex justify-between items-center mb-1 text-[11px]">
+                        <span class="font-bold text-slate-600 dark:text-slate-400 font-sans">Payload String QRIS:</span>
+                        <button onclick="copyDetailText('detail-modal-qris-val')" class="text-googleBlue dark:text-sky-400 hover:underline font-bold text-[10px] flex items-center gap-1">
+                            <i class="fa-regular fa-copy"></i> Salin QR String
+                        </button>
+                    </div>
+                    <p id="detail-modal-qris-val" class="font-mono text-[10px] text-slate-500 break-all select-all max-h-16 overflow-y-auto bg-white dark:bg-darkCard p-2 rounded-xl border border-slate-200 dark:border-darkBorder">-</p>
+                </div>
+
+                <!-- Action Link Buttons -->
+                <div class="grid grid-cols-2 gap-2 pt-2">
+                    <a id="detail-modal-open-btn" href="#" target="_blank"
+                       class="py-3 bg-googleBlue hover:bg-googleBlueHover text-white font-bold rounded-xl text-center text-xs flex items-center justify-center gap-1.5 transition shadow-sm">
+                        <span>Buka Checkout</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    </a>
+                    <button type="button" onclick="closeArchiveDetail()"
+                        class="py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs transition">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================== -->
     <!-- SOUNDBOX & DASHBOARD JAVASCRIPT                -->
     <!-- ============================================== -->
     <script>
@@ -785,6 +947,8 @@ def midtrans_webhook():
         let countdownTimer = null;
         let pollTimer = null;
         let isPaid = false;
+        let allRecentTransactions = <%- JSON.stringify(recentPayments || []) %>;
+        let currentArchiveStatus = 'ALL';
 
         // Dark Mode Logic
         function initTheme() {
@@ -1121,44 +1285,239 @@ def midtrans_webhook():
             }
         }
 
+        // Render archiving table with filtering & detail buttons
+        function renderArchiveTable(items) {
+            const tbody = document.getElementById('transactions-table-body');
+            const emptyState = document.getElementById('archive-empty-state');
+            if (!tbody) return;
+
+            if (!items || items.length === 0) {
+                tbody.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            tbody.innerHTML = items.map(item => {
+                const isPaid = item.status === 'PAID';
+                const isPending = item.status === 'PENDING';
+                const statusBadgeClass = isPaid 
+                    ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-300/40' 
+                    : (isPending 
+                        ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-300/40' 
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700');
+
+                const timeStr = item.paid_at 
+                    ? new Date(item.paid_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                    : (item.created_at ? new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-');
+
+                return `
+                    <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                        <td class="py-2.5 font-mono font-bold text-googleBlue dark:text-sky-400">
+                            <span class="hover:underline cursor-pointer" onclick="openArchiveDetail('${item.id}')">${item.id}</span>
+                            ${item.order_id && item.order_id !== item.id ? `<span class="block text-[10px] text-slate-400 font-mono font-normal truncate max-w-[110px]">${item.order_id}</span>` : ''}
+                        </td>
+                        <td class="py-2.5 text-slate-700 dark:text-slate-300 max-w-[140px] truncate" title="${item.custom_name}">
+                            ${item.custom_name}
+                        </td>
+                        <td class="py-2.5 font-mono font-bold text-slate-900 dark:text-slate-100">
+                            ${formatRupiah(item.total_amount)}
+                        </td>
+                        <td class="py-2.5">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusBadgeClass} inline-flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full ${isPaid ? 'bg-emerald-500' : (isPending ? 'bg-amber-500' : 'bg-slate-400')}"></span>
+                                <span>${item.status}</span>
+                            </span>
+                        </td>
+                        <td class="py-2.5 text-slate-400 font-mono text-[11px]">
+                            ${timeStr}
+                        </td>
+                        <td class="py-2.5 text-right space-x-1.5">
+                            <button type="button" onclick="openArchiveDetail('${item.id}')" 
+                                class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold transition" title="Lihat Detail Pengarsipan">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <a href="${baseUrl}/pay/${item.id}" target="_blank" 
+                               class="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-googleBlue dark:text-sky-400 text-[11px] font-bold inline-flex items-center gap-1 transition" title="Buka Halaman Checkout Port 3001">
+                                <span>Pay</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filter archive status tab
+        function filterArchiveStatus(status) {
+            currentArchiveStatus = status;
+            const tabs = ['ALL', 'PAID', 'PENDING', 'EXPIRED'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-status-' + t.toLowerCase());
+                if (!btn) return;
+                if (t === status) {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-googleBlue text-white shadow-sm transition flex items-center gap-1.5';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5';
+                }
+            });
+            applyArchiveFilter();
+        }
+
+        // Apply search keyword + status filter
+        function applyArchiveFilter() {
+            const query = (document.getElementById('archive-search')?.value || '').toLowerCase().trim();
+
+            let paidCount = 0;
+            let pendingCount = 0;
+            let expiredCount = 0;
+
+            allRecentTransactions.forEach(item => {
+                if (item.status === 'PAID') paidCount++;
+                else if (item.status === 'PENDING') pendingCount++;
+                else if (item.status === 'EXPIRED') expiredCount++;
+            });
+
+            const badgeAll = document.getElementById('badge-count-all');
+            const badgePaid = document.getElementById('badge-count-paid');
+            const badgePending = document.getElementById('badge-count-pending');
+            const badgeExpired = document.getElementById('badge-count-expired');
+
+            if (badgeAll) badgeAll.innerText = allRecentTransactions.length;
+            if (badgePaid) badgePaid.innerText = paidCount;
+            if (badgePending) badgePending.innerText = pendingCount;
+            if (badgeExpired) badgeExpired.innerText = expiredCount;
+
+            const filtered = allRecentTransactions.filter(item => {
+                const matchStatus = currentArchiveStatus === 'ALL' || item.status === currentArchiveStatus;
+                if (!matchStatus) return false;
+
+                if (!query) return true;
+                const idMatch = (item.id || '').toLowerCase().includes(query);
+                const orderMatch = (item.order_id || '').toLowerCase().includes(query);
+                const memoMatch = (item.custom_name || '').toLowerCase().includes(query);
+                const amountMatch = String(item.total_amount || '').includes(query);
+                return idMatch || orderMatch || memoMatch || amountMatch;
+            });
+
+            renderArchiveTable(filtered);
+        }
+
+        // Open archive detail modal
+        function openArchiveDetail(id) {
+            const item = allRecentTransactions.find(t => t.id === id);
+            if (!item) return;
+
+            document.getElementById('detail-modal-invoice-id').innerText = item.id;
+            document.getElementById('detail-modal-order-id').innerText = item.order_id || item.id;
+            document.getElementById('detail-modal-memo').innerText = item.custom_name || '-';
+            document.getElementById('detail-modal-amount').innerText = formatRupiah(item.total_amount);
+            document.getElementById('detail-modal-base').innerText = formatRupiah(item.base_amount || item.total_amount);
+            document.getElementById('detail-modal-code').innerText = '+' + (item.unique_code || 0);
+
+            const isPaid = item.status === 'PAID';
+            const isPending = item.status === 'PENDING';
+            const badgeEl = document.getElementById('detail-modal-status-badge');
+            badgeEl.className = `px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaid ? 'bg-emerald-100 text-emerald-700' : (isPending ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-700')}`;
+            badgeEl.innerText = item.status;
+
+            document.getElementById('detail-modal-created').innerText = item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : '-';
+            document.getElementById('detail-modal-expires').innerText = item.expires_at ? new Date(item.expires_at).toLocaleString('id-ID') : '-';
+            document.getElementById('detail-modal-paid').innerText = item.paid_at ? new Date(item.paid_at).toLocaleString('id-ID') : (isPaid ? 'Terverifikasi' : 'Belum Bayar');
+
+            const whStatusEl = document.getElementById('detail-modal-webhook-status');
+            whStatusEl.className = item.webhook_sent ? 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700' : 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500';
+            whStatusEl.innerText = item.webhook_sent ? 'TERKIRIM (OK)' : (item.webhook_url ? 'BELUM TERKIRIM' : 'TIDAK ADA WEBHOOK');
+            document.getElementById('detail-modal-webhook-url').innerText = item.webhook_url || 'Tidak dikonfigurasi saat pembuatan';
+
+            const qrisBox = document.getElementById('detail-modal-qris-box');
+            const qrisVal = document.getElementById('detail-modal-qris-val');
+            if (item.qris_code) {
+                qrisBox.classList.remove('hidden');
+                qrisVal.innerText = item.qris_code;
+            } else {
+                qrisBox.classList.add('hidden');
+            }
+
+            document.getElementById('detail-modal-open-btn').href = `${baseUrl}/pay/${item.id}`;
+            document.getElementById('archive-detail-modal').classList.remove('hidden');
+        }
+
+        function closeArchiveDetail() {
+            document.getElementById('archive-detail-modal').classList.add('hidden');
+        }
+
+        function copyDetailText(elementId) {
+            const text = document.getElementById(elementId)?.innerText;
+            if (text && text !== '-') {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Teks berhasil disalin!');
+                });
+            }
+        }
+
         // Refresh transactions table and stats
         async function refreshDashboardData() {
+            const icon = document.getElementById('refresh-icon');
+            if (icon) icon.classList.add('animate-spin');
+
             try {
                 const res = await fetch('/api/dashboard-data');
                 const data = await res.json();
                 if (data.success) {
                     if (data.stats) {
-                        document.getElementById('stat-volume').innerText = formatRupiah(data.stats.todayVolume);
-                        document.getElementById('stat-success').innerText = `${data.stats.todaySuccess} / ${data.stats.todayTotal}`;
+                        const s = data.stats;
+                        const volEl = document.getElementById('stat-volume');
+                        const allVolEl = document.getElementById('stat-all-volume');
+                        const succEl = document.getElementById('stat-success');
+                        const rateEl = document.getElementById('stat-success-rate');
+                        const pendEl = document.getElementById('stat-pending');
+                        const allPendEl = document.getElementById('stat-all-pending');
+                        const expEl = document.getElementById('stat-expired');
+                        const allExpEl = document.getElementById('stat-all-expired');
+
+                        if (volEl) volEl.innerText = formatRupiah(s.todayVolume);
+                        if (allVolEl) allVolEl.innerText = formatRupiah(s.allVolume);
+                        if (succEl) succEl.innerHTML = `${s.todaySuccess} <span class="text-xs text-slate-400 font-normal">/ ${s.todayTotal} Hari Ini</span>`;
+                        if (rateEl) rateEl.innerText = (s.successRate || 100) + '%';
+                        if (pendEl) pendEl.innerText = s.todayPending;
+                        if (allPendEl) allPendEl.innerText = s.allPending;
+                        if (expEl) expEl.innerText = s.todayExpired || 0;
+                        if (allExpEl) allExpEl.innerText = s.allExpired || 0;
+
+                        // Traffic bar widths
+                        const total = s.allTotal || 1;
+                        const pSucc = Math.max(0, (s.allSuccess / total) * 100);
+                        const pPend = Math.max(0, (s.allPending / total) * 100);
+                        const pExp = Math.max(0, (s.allExpired / total) * 100);
+
+                        const barS = document.getElementById('bar-success');
+                        const barP = document.getElementById('bar-pending');
+                        const barE = document.getElementById('bar-expired');
+                        if (barS) barS.style.width = pSucc + '%';
+                        if (barP) barP.style.width = pPend + '%';
+                        if (barE) barE.style.width = pExp + '%';
+
+                        const legS = document.getElementById('legend-success');
+                        const legP = document.getElementById('legend-pending');
+                        const legE = document.getElementById('legend-expired');
+                        const totLbl = document.getElementById('traffic-total-label');
+                        if (legS) legS.innerText = s.allSuccess;
+                        if (legP) legP.innerText = s.allPending;
+                        if (legE) legE.innerText = s.allExpired;
+                        if (totLbl) totLbl.innerText = `Total ${s.allTotal} Transaksi Masuk`;
                     }
-                    if (data.recent && data.recent.length > 0) {
-                        const tbody = document.getElementById('transactions-table-body');
-                        tbody.innerHTML = data.recent.map(item => `
-                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                                <td class="py-2.5 font-mono font-bold text-googleBlue dark:text-sky-400">
-                                    ${item.id}
-                                    ${item.order_id && item.order_id !== item.id ? `<span class="block text-[10px] text-slate-400 font-mono font-normal">${item.order_id}</span>` : ''}
-                                </td>
-                                <td class="py-2.5 text-slate-600 dark:text-slate-300 max-w-[130px] truncate">${item.custom_name}</td>
-                                <td class="py-2.5 font-mono font-bold">${formatRupiah(item.total_amount)}</td>
-                                <td class="py-2.5">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.status === 'PAID' ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400' : (item.status === 'PENDING' ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500')}">
-                                        ${item.status}
-                                    </span>
-                                </td>
-                                <td class="py-2.5 text-right">
-                                    <a href="${baseUrl}/pay/${item.id}" target="_blank" 
-                                       class="text-[11px] text-googleBlue dark:text-sky-400 hover:underline font-bold inline-flex items-center gap-1">
-                                        <span>Checkout</span>
-                                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('');
+
+                    if (data.recent) {
+                        allRecentTransactions = data.recent;
+                        applyArchiveFilter();
                     }
                 }
             } catch (e) {
                 console.warn('Dashboard data refresh error:', e);
+            } finally {
+                if (icon) icon.classList.remove('animate-spin');
             }
         }
 
@@ -1184,6 +1543,7 @@ def midtrans_webhook():
 
         // On Load: Restore active payment if user refreshed the page!
         window.addEventListener('DOMContentLoaded', async () => {
+            applyArchiveFilter();
             fetchRecentMutations();
             fetchWebhookLogs();
 

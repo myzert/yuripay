@@ -362,12 +362,12 @@ function markWebhookSent(paymentId) {
 }
 
 /**
- * List recent payments for dashboard
+ * List recent payments for dashboard & archiving
  */
-function getRecentPayments(limit = 20) {
+function getRecentPayments(limit = 100) {
     try {
         const rows = db.db.prepare(`
-            SELECT id, order_id, base_amount, unique_code, total_amount, custom_name, redirect_url, webhook_url, status, webhook_sent, created_at, expires_at, paid_at
+            SELECT id, order_id, trx_id, base_amount, unique_code, total_amount, custom_name, redirect_url, webhook_url, qris_code, status, webhook_sent, created_at, expires_at, paid_at
             FROM yuripay_payments 
             ORDER BY created_at DESC 
             LIMIT ?
@@ -380,28 +380,63 @@ function getRecentPayments(limit = 20) {
 }
 
 /**
- * Get dashboard statistics
+ * Get dashboard traffic & archiving statistics
  */
 function getStats() {
     try {
-        const totalSalesRow = db.db.prepare(`
+        const todayRow = db.db.prepare(`
             SELECT 
                 COUNT(*) as total_count,
                 SUM(CASE WHEN status = 'PAID' THEN total_amount ELSE 0 END) as total_volume,
                 SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END) as paid_count,
-                SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) as pending_count
+                SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status = 'EXPIRED' THEN 1 ELSE 0 END) as expired_count
             FROM yuripay_payments
             WHERE date(created_at) = date('now')
         `).get();
 
+        const allTimeRow = db.db.prepare(`
+            SELECT 
+                COUNT(*) as total_all,
+                SUM(CASE WHEN status = 'PAID' THEN total_amount ELSE 0 END) as volume_all,
+                SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END) as paid_all,
+                SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) as pending_all,
+                SUM(CASE WHEN status = 'EXPIRED' THEN 1 ELSE 0 END) as expired_all
+            FROM yuripay_payments
+        `).get();
+
+        const totalToday = todayRow?.total_count || 0;
+        const paidToday = todayRow?.paid_count || 0;
+        const pendingToday = todayRow?.pending_count || 0;
+        const expiredToday = todayRow?.expired_count || 0;
+
+        const totalAll = allTimeRow?.total_all || 0;
+        const paidAll = allTimeRow?.paid_all || 0;
+        const pendingAll = allTimeRow?.pending_all || 0;
+        const expiredAll = allTimeRow?.expired_all || 0;
+
+        const successRate = totalToday > 0 ? Math.round((paidToday / totalToday) * 100) : (totalAll > 0 ? Math.round((paidAll / totalAll) * 100) : 100);
+
         return {
-            todayVolume: totalSalesRow.total_volume || 0,
-            todaySuccess: totalSalesRow.paid_count || 0,
-            todayPending: totalSalesRow.pending_count || 0,
-            todayTotal: totalSalesRow.total_count || 0
+            todayVolume: todayRow?.total_volume || 0,
+            todaySuccess: paidToday,
+            todayPending: pendingToday,
+            todayExpired: expiredToday,
+            todayTotal: totalToday,
+            allVolume: allTimeRow?.volume_all || 0,
+            allSuccess: paidAll,
+            allPending: pendingAll,
+            allExpired: expiredAll,
+            allTotal: totalAll,
+            successRate
         };
     } catch (e) {
-        return { todayVolume: 0, todaySuccess: 0, todayPending: 0, todayTotal: 0 };
+        console.error('[PaymentStore] getStats error:', e.message);
+        return { 
+            todayVolume: 0, todaySuccess: 0, todayPending: 0, todayExpired: 0, todayTotal: 0,
+            allVolume: 0, allSuccess: 0, allPending: 0, allExpired: 0, allTotal: 0,
+            successRate: 100 
+        };
     }
 }
 
