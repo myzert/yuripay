@@ -410,20 +410,30 @@ function getStats() {
  */
 function sanitizePublic(payment, baseUrl = '') {
     if (!payment) return null;
+    const expiresDate = payment.expiresAt instanceof Date ? payment.expiresAt : (payment.expires_at ? new Date(payment.expires_at) : null);
+    const createdDate = payment.createdAt instanceof Date ? payment.createdAt : (payment.created_at ? new Date(payment.created_at) : null);
+    const paidDate = payment.paidAt instanceof Date ? payment.paidAt : (payment.paid_at ? new Date(payment.paid_at) : null);
+
     return {
         payment_id: payment.id,
         order_id: payment.orderId || payment.order_id || payment.id,
         amount: payment.totalAmount || payment.total_amount,
+        base_amount: payment.baseAmount || payment.base_amount || (payment.totalAmount || payment.total_amount),
+        unique_code: payment.uniqueCode || payment.unique_code || 0,
         custom_name: payment.customName || payment.custom_name,
         payment_url: `${baseUrl}/pay/${payment.id}`,
         qr_image: payment.qrImage || payment.qr_image,
+        qris_code: payment.qrisCode || payment.qris_code || null,
         status: payment.status,
         success_theme: payment.successTheme || payment.success_theme || process.env.DEFAULT_SUCCESS_THEME || 'anime',
         redirect_url: payment.redirectUrl || payment.redirect_url || null,
         webhook_url: payment.webhookUrl || payment.webhook_url || null,
-        created_at: payment.createdAt || payment.created_at,
-        expires_at: payment.expiresAt || payment.expires_at,
-        paid_at: payment.paidAt || payment.paid_at || null
+        created_at: createdDate ? createdDate.toISOString() : null,
+        created_timestamp: createdDate ? createdDate.getTime() : 0,
+        expires_at: expiresDate ? expiresDate.toISOString() : null,
+        expires_timestamp: expiresDate ? expiresDate.getTime() : 0,
+        paid_at: paidDate ? paidDate.toISOString() : null,
+        paid_timestamp: paidDate ? paidDate.getTime() : 0
     };
 }
 

@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= payment ? 'Pembayaran ' + formatRupiah(payment.amount) : 'Pembayaran' %> - <%= storeName %> | <%= appName %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title><%= payment ? 'Pembayaran ' + formatRupiah(payment.amount) : 'Pembayaran QRIS' %> - <%= storeName %> | <%= appName %></title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,90 +12,137 @@
             theme: {
                 extend: {
                     colors: {
-                        googleBlue: '#1a73e8',
-                        googleBlueHover: '#1557b0',
-                        googleGreen: '#1e8e3e',
-                        googleSurface: '#ffffff',
-                        darkBg: '#0f172a',
-                        darkCard: '#1e293b',
-                        darkBorder: '#334155',
-                        darkText: '#f8fafc',
+                        brandBlue: '#1a73e8',
+                        brandBlueHover: '#1557b0',
+                        brandEmerald: '#10b981',
+                        brandRose: '#f43f5e',
+                        darkBg: '#090d16',
+                        darkCard: '#111827',
+                        darkCardElevated: '#1f293d',
+                        darkBorder: '#1f293d',
                         darkSubtext: '#94a3b8'
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scan': 'scanLine 3s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        scanLine: {
+                            '0%, 100%': { transform: 'translateY(0%)', opacity: '0.2' },
+                            '50%': { transform: 'translateY(230px)', opacity: '0.9' }
+                        }
                     }
                 }
             }
         }
     </script>
-    <!-- Font Awesome & Google Fonts -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome 6 & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
-        .font-mono { font-family: 'Roboto Mono', monospace; }
-        @keyframes bounce-slow {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+        body { 
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
-        .bounce-slow { animation: bounce-slow 2.5s infinite ease-in-out; }
-        @keyframes scale-in {
-            0% { transform: scale(0.9); opacity: 0; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        @keyframes float-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float { animation: float-subtle 3s ease-in-out infinite; }
+
+        @keyframes pop-in {
+            0% { transform: scale(0.92); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .scale-in { animation: scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-pop-in { animation: pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Tech corner brackets for QR container */
+        .corner-bracket {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-color: #3b82f6;
+            pointer-events: none;
+        }
+        .corner-tl { top: 8px; left: 8px; border-top-width: 2.5px; border-left-width: 2.5px; border-top-left-radius: 6px; }
+        .corner-tr { top: 8px; right: 8px; border-top-width: 2.5px; border-right-width: 2.5px; border-top-right-radius: 6px; }
+        .corner-bl { bottom: 8px; left: 8px; border-bottom-width: 2.5px; border-left-width: 2.5px; border-bottom-left-radius: 6px; }
+        .corner-br { bottom: 8px; right: 8px; border-bottom-width: 2.5px; border-right-width: 2.5px; border-bottom-right-radius: 6px; }
+
+        /* Print formatting for clean thermal receipt */
+        @media print {
+            body { background: #fff !important; color: #000 !important; }
+            header, footer, #btn-toggle-theme-mode, #sound-toggle-btn, button, #btn-redirect-now, .no-print {
+                display: none !important;
+            }
+            #checkout-card {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            #receipt-details {
+                border: 1px dashed #000 !important;
+                background: transparent !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-[#f0f4f9] dark:bg-darkBg text-slate-800 dark:text-darkText min-h-screen flex flex-col justify-between transition-colors duration-200">
+<body class="bg-slate-100/80 dark:bg-darkBg text-slate-900 dark:text-slate-100 min-h-screen flex flex-col justify-between transition-colors duration-200">
 
-    <!-- Header Navbar -->
-    <header class="bg-white dark:bg-darkCard border-b border-slate-200 dark:border-darkBorder px-6 py-3.5 sticky top-0 z-30 shadow-sm transition-colors duration-200">
+    <!-- Top Navigation Header -->
+    <header class="bg-white/90 dark:bg-darkCard/90 backdrop-blur-md border-b border-slate-200/80 dark:border-darkBorder px-4 sm:px-6 py-3 sticky top-0 z-40 transition-colors duration-200">
         <div class="max-w-xl mx-auto flex items-center justify-between">
+            <!-- Merchant Info -->
             <div class="flex items-center space-x-3">
                 <% if (typeof storeLogoUrl !== 'undefined' && storeLogoUrl) { %>
-                    <img src="<%= storeLogoUrl %>" alt="<%= storeName %>" class="w-10 h-10 rounded-2xl object-cover shadow-md border border-slate-200 dark:border-darkBorder">
+                    <img src="<%= storeLogoUrl %>" alt="<%= storeName %>" class="w-10 h-10 rounded-2xl object-cover shadow-sm border border-slate-200 dark:border-slate-700">
                 <% } else { %>
-                    <div class="w-10 h-10 rounded-2xl bg-googleBlue text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
-                        <i class="fa-solid fa-shield-halved"></i>
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-sky-400 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-blue-500/20">
+                        <i class="fa-solid fa-store"></i>
                     </div>
                 <% } %>
                 <div>
-                    <h1 class="text-base font-extrabold tracking-tight flex items-center gap-1.5 text-slate-900 dark:text-white">
-                        <span><%= storeName %></span>
+                    <h1 class="text-sm sm:text-base font-extrabold tracking-tight flex items-center gap-1.5 text-slate-900 dark:text-white leading-tight">
+                        <span class="truncate max-w-[170px] sm:max-w-xs"><%= storeName %></span>
                         <span class="text-sky-500 text-xs" title="Official Verified Merchant">
                             <i class="fa-solid fa-circle-check"></i>
                         </span>
                     </h1>
                     <p class="text-[11px] text-slate-500 dark:text-darkSubtext font-medium flex items-center gap-1">
-                        <span>Pembayaran Resmi QRIS</span>
-                        <span class="font-bold text-googleBlue dark:text-sky-400">• <%= appName %></span>
+                        <span>QRIS Merchant Resmi</span>
+                        <span class="font-bold text-brandBlue dark:text-sky-400">• <%= appName %></span>
                     </p>
                 </div>
             </div>
 
-            <!-- Action Buttons: Theme Mode, Sound & Display Theme -->
+            <!-- Action Controls: Theme Mode, Sound & Dark Mode -->
             <div class="flex items-center space-x-1.5 sm:space-x-2">
-                <!-- Success Theme Toggle: Anime vs Default -->
+                <!-- Theme Celebration Mode Switcher (Anime / Default) -->
                 <button id="btn-toggle-theme-mode" onclick="toggleSuccessThemeMode()" 
-                    class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300 transition border border-slate-200 dark:border-slate-700 flex items-center gap-1.5" 
-                    title="Ganti Mode Tampilan Sukses (Anime / Default)">
-                    <span id="badge-theme-mode" class="w-2 h-2 rounded-full bg-pink-500"></span>
-                    <span id="label-theme-mode" class="hidden sm:inline">Anime</span>
+                    class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-darkCardElevated dark:hover:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 transition border border-slate-200/80 dark:border-slate-700 flex items-center gap-1.5 shadow-sm" 
+                    title="Ganti Mode Tampilan Sukses (Anime / Default Fintech)">
+                    <span id="badge-theme-mode" class="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                    <span id="label-theme-mode" class="hidden sm:inline">Mode Anime</span>
                 </button>
 
-                <!-- Soundbox Mute/Unmute Toggle -->
+                <!-- Sound Mute/Unmute Toggle -->
                 <button id="sound-toggle-btn" onclick="toggleSound()" 
-                    class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-sky-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
+                    class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-darkCardElevated dark:hover:bg-slate-800 text-slate-700 dark:text-sky-400 flex items-center justify-center transition border border-slate-200/80 dark:border-slate-700 shadow-sm" 
                     title="Aktifkan / Bisukan Notifikasi Suara">
                     <i id="sound-icon" class="fa-solid fa-volume-high text-xs sm:text-sm"></i>
                 </button>
 
                 <!-- Dark / Light Mode Switch -->
                 <button onclick="toggleDarkMode()" 
-                    class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-amber-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700" 
-                    title="Ganti Mode Tampilan">
+                    class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-darkCardElevated dark:hover:bg-slate-800 text-slate-700 dark:text-amber-400 flex items-center justify-center transition border border-slate-200/80 dark:border-slate-700 shadow-sm" 
+                    title="Ganti Mode Tampilan (Gelap / Terang)">
                     <i id="theme-icon" class="fa-solid fa-moon text-xs sm:text-sm"></i>
                 </button>
             </div>
@@ -103,189 +150,291 @@
     </header>
 
     <!-- Main Payment Container -->
-    <main class="max-w-md w-full mx-auto p-4 my-auto">
+    <main class="max-w-md w-full mx-auto px-4 py-4 sm:py-6 my-auto">
 
         <% if (error || !payment) { %>
-            <!-- Error / Expired Card -->
-            <div class="bg-white dark:bg-darkCard rounded-[32px] p-8 shadow-xl border border-slate-200 dark:border-darkBorder text-center">
+            <!-- Error / Expired Payment Card -->
+            <div class="bg-white dark:bg-darkCard rounded-[32px] p-8 shadow-xl border border-slate-200 dark:border-darkBorder text-center animate-pop-in">
                 <div class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-4">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Tagihan Tidak Tersedia</h2>
-                <p class="text-xs text-slate-500 dark:text-darkSubtext mt-2 mb-6">
+                <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Tagihan Tidak Tersedia</h2>
+                <p class="text-xs text-slate-500 dark:text-darkSubtext mt-2 mb-6 leading-relaxed">
                     <%= error || 'Tagihan QRIS tidak ditemukan atau telah kedaluwarsa.' %>
                 </p>
-                <p class="text-xs text-slate-400">Silakan hubungi admin toko <%= storeName %> untuk mendapatkan link pembayaran baru.</p>
+                <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+                    <p class="font-medium">Silakan hubungi penjual di <strong><%= storeName %></strong> untuk membuat link pembayaran baru.</p>
+                </div>
             </div>
         <% } else { %>
 
             <!-- Active Checkout Card -->
-            <div id="checkout-card" class="bg-white dark:bg-darkCard rounded-[32px] p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-darkBorder relative transition-colors duration-200">
+            <div id="checkout-card" class="bg-white dark:bg-darkCard rounded-[32px] p-5 sm:p-7 shadow-xl shadow-slate-300/40 dark:shadow-none border border-slate-200/80 dark:border-darkBorder relative transition-colors duration-200 animate-pop-in">
 
                 <!-- STAGE 1: PENDING / WAITING PAYMENT -->
                 <div id="stage-waiting" class="<%= payment.status === 'PAID' ? 'hidden' : '' %>">
-                    <!-- Invoice Bar -->
+                    
+                    <!-- Order Bar -->
                     <div class="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-darkBorder mb-4">
-                        <div class="text-left">
+                        <div class="text-left pr-2">
                             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-darkSubtext">Pesanan</span>
-                            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate max-w-[210px]"><%= payment.custom_name %></h3>
+                            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate max-w-[210px]" title="<%= payment.custom_name %>">
+                                <%= payment.custom_name %>
+                            </h3>
                         </div>
-                        <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-googleBlue dark:text-sky-400 border border-blue-200 dark:border-blue-900">
-                            <%= payment.payment_id %>
-                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-brandBlue dark:text-sky-400 border border-blue-200 dark:border-blue-900 select-all" title="Klik untuk salin ID Tagihan">
+                                <%= payment.payment_id %>
+                            </span>
+                            <button type="button" onclick="copyText('<%= payment.payment_id %>', 'copy-id-icon')" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 text-xs flex items-center justify-center transition" title="Salin ID Tagihan">
+                                <i id="copy-id-icon" class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Total Amount Display (Natural, Clean, No "Kode Unik" label) -->
-                    <div class="p-4 bg-gradient-to-b from-blue-50/60 to-slate-50/70 dark:from-slate-800/80 dark:to-slate-800/40 rounded-2xl border border-blue-100 dark:border-darkBorder text-center mb-4">
-                        <p class="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-darkSubtext">Total Pembayaran</p>
-                        <h2 class="text-3xl sm:text-4xl font-black font-mono text-googleBlue dark:text-sky-400 tracking-tight my-1">
+                    <!-- Nominal Hero Card -->
+                    <div class="p-4 bg-gradient-to-b from-blue-50/70 via-indigo-50/30 to-slate-50/80 dark:from-slate-800/90 dark:via-slate-800/50 dark:to-slate-900/40 rounded-2xl border border-blue-100 dark:border-slate-800 text-center mb-4 relative overflow-hidden">
+                        <p class="text-[11px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-darkSubtext flex items-center justify-center gap-1.5">
+                            <span>Total Pembayaran</span>
+                            <i class="fa-solid fa-shield-halved text-[10px] text-brandBlue dark:text-sky-400"></i>
+                        </p>
+                        
+                        <h2 class="text-3xl sm:text-4xl font-black font-mono text-brandBlue dark:text-sky-400 tracking-tight my-1.5 select-all">
                             <%= formatRupiah(payment.amount) %>
                         </h2>
-                        <!-- Copy Nominal Button -->
-                        <button type="button" onclick="copyAmount('<%= payment.amount %>')" 
-                            class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:text-googleBlue dark:hover:text-sky-400 bg-white dark:bg-darkCard px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm mt-1 transition">
-                            <i class="fa-regular fa-copy"></i>
-                            <span id="copy-text">Salin Nominal Tepat</span>
-                        </button>
+
+                        <!-- 1-Click Copy Nominal Button -->
+                        <div class="flex items-center justify-center gap-2 mt-2">
+                            <button type="button" id="btn-copy-amount" onclick="copyAmount('<%= payment.amount %>')" 
+                                class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-brandBlue dark:hover:text-sky-400 bg-white dark:bg-darkCard px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition active:scale-95">
+                                <i id="copy-icon" class="fa-regular fa-copy text-brandBlue dark:text-sky-400"></i>
+                                <span id="copy-text">Salin Nominal Tepat</span>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-400 mt-2">
+                            *Transfer sesuai nominal tepat agar verifikasi mutasi otomatis berjalan instan.
+                        </p>
                     </div>
 
-                    <!-- Dynamic QRIS Box -->
-                    <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center my-4 relative group">
-                        <img id="qr-img" src="<%= payment.qr_image %>" alt="QRIS Code" class="w-60 h-60 object-contain rounded-xl">
-                        
-                        <!-- NMID and QRIS Badge -->
-                        <div class="mt-3 flex items-center justify-between w-full px-2 text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                            <span class="flex items-center gap-1.5">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" class="h-4" alt="QRIS">
-                                <span class="text-[10px] text-slate-400">| NMID: ID1024341992468</span>
+                    <!-- Dynamic QRIS Display Container -->
+                    <div id="qr-container" class="bg-white dark:bg-slate-900 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center my-3 relative overflow-hidden group">
+                        <!-- High-Tech Corner Brackets -->
+                        <div class="corner-bracket corner-tl"></div>
+                        <div class="corner-bracket corner-tr"></div>
+                        <div class="corner-bracket corner-bl"></div>
+                        <div class="corner-bracket corner-br"></div>
+
+                        <!-- Scan Line Animation -->
+                        <div id="scan-line" class="absolute left-6 right-6 top-6 h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent pointer-events-none animate-scan shadow-[0_0_8px_#38bdf8]"></div>
+
+                        <!-- Official QRIS Header -->
+                        <div class="flex items-center justify-between w-full px-2 mb-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" class="h-5" alt="QRIS Standar Pembayaran Nasional">
+                            <span class="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-400">
+                                NMID: ID1024341992468
                             </span>
-                            <a href="<%= payment.qr_image %>" download="QRIS-<%= payment.payment_id %>.png" 
-                               class="text-googleBlue dark:text-sky-400 hover:underline flex items-center gap-1 text-[11px]">
-                                <i class="fa-solid fa-download"></i> Unduh QR
+                        </div>
+
+                        <!-- QR Image with Expired Overlay -->
+                        <div class="relative w-60 h-60 flex items-center justify-center bg-white rounded-xl p-1 shadow-inner">
+                            <img id="qr-img" src="<%= payment.qr_image %>" alt="QRIS Code YuriPay" class="w-full h-full object-contain rounded-lg">
+                            
+                            <!-- Expired Overlay (Shown dynamically when time runs out) -->
+                            <div id="qr-expired-overlay" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center text-center p-4 text-white hidden">
+                                <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl mb-2">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </div>
+                                <h4 class="font-extrabold text-sm text-rose-300">Tagihan Kedaluwarsa</h4>
+                                <p class="text-[11px] text-slate-300 mt-1">Batas waktu pembayaran telah habis. Silakan buat pesanan baru.</p>
+                            </div>
+                        </div>
+
+                        <!-- QR Actions: Download & Copy Raw QR String -->
+                        <div class="mt-3.5 flex items-center justify-between w-full px-1 text-xs font-bold">
+                            <a id="btn-download-qr" href="<%= payment.qr_image %>" download="QRIS-<%= payment.order_id || payment.payment_id %>.png" 
+                               class="text-brandBlue dark:text-sky-400 hover:text-brandBlueHover dark:hover:text-sky-300 flex items-center gap-1.5 py-1 px-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition">
+                                <i class="fa-solid fa-download"></i>
+                                <span>Unduh QR</span>
                             </a>
+
+                            <% if (payment.qris_code) { %>
+                                <button type="button" onclick="copyText('<%= payment.qris_code %>', 'copy-qris-icon')" 
+                                    class="text-slate-600 dark:text-slate-300 hover:text-brandBlue dark:hover:text-sky-400 flex items-center gap-1.5 py-1 px-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                    <i id="copy-qris-icon" class="fa-regular fa-copy"></i>
+                                    <span>Salin Kode QR</span>
+                                </button>
+                            <% } %>
                         </div>
                     </div>
 
-                    <!-- Countdown Timer -->
-                    <div class="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-darkBorder text-xs mb-4">
-                        <span class="text-slate-500 dark:text-darkSubtext flex items-center gap-1.5 font-medium">
-                            <i class="fa-regular fa-clock text-googleBlue dark:text-sky-400"></i>
-                            <span>Batas Waktu Bayar:</span>
-                        </span>
-                        <span id="countdown-timer" class="font-mono font-bold text-googleBlue dark:text-sky-400 text-sm">10:00</span>
+                    <!-- Dynamic Countdown Timer & Smooth Animated Progress Bar -->
+                    <div id="countdown-card" class="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-3.5 border border-slate-200 dark:border-darkBorder mb-4 transition-colors">
+                        <div class="flex items-center justify-between text-xs mb-2">
+                            <span class="text-slate-500 dark:text-darkSubtext flex items-center gap-1.5 font-medium">
+                                <i class="fa-regular fa-clock text-brandBlue dark:text-sky-400"></i>
+                                <span>Sisa Batas Waktu Bayar:</span>
+                            </span>
+                            <span id="countdown-badge" class="font-mono font-extrabold px-2.5 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300/50 dark:border-emerald-800 transition-colors">
+                                <span id="countdown-timer">--:--</span>
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar Track -->
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                            <div id="countdown-progress-bar" class="h-2 rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-500 ease-linear" style="width: 100%;"></div>
+                        </div>
                     </div>
 
-                    <!-- Live Polling Status Indicator -->
-                    <div class="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-darkSubtext mb-5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-googleBlue dark:bg-sky-400 animate-ping inline-block"></span>
-                        <span id="status-label" class="font-medium">Mengecek pembayaran secara otomatis...</span>
+                    <!-- Realtime Polling Status Indicator -->
+                    <div class="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-darkSubtext mb-4">
+                        <span id="ping-dot" class="w-2.5 h-2.5 rounded-full bg-brandBlue dark:bg-sky-400 animate-ping inline-block"></span>
+                        <span id="status-label" class="font-medium">Mengecek mutasi realtime otomatis...</span>
                     </div>
 
-                    <!-- Manual Check Button -->
+                    <!-- Interactive Manual Check Button -->
                     <button type="button" id="btn-check-manual" onclick="checkStatusManual()"
-                        class="w-full py-4 bg-googleBlue hover:bg-googleBlueHover dark:bg-sky-600 dark:hover:bg-sky-500 text-white font-bold rounded-2xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm">
+                        class="w-full py-3.5 sm:py-4 bg-brandBlue hover:bg-brandBlueHover dark:bg-sky-600 dark:hover:bg-sky-500 text-white font-extrabold rounded-2xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm active:scale-[0.99]">
                         <i class="fa-solid fa-rotate" id="check-icon"></i>
-                        <span>Saya Sudah Bayar (Cek Sekarang)</span>
+                        <span id="check-btn-text">Saya Sudah Bayar (Cek Sekarang)</span>
                     </button>
 
                     <!-- Supported E-Wallets & Banks -->
                     <div class="mt-6 pt-5 border-t border-slate-100 dark:border-darkBorder text-center">
-                        <p class="text-[11px] font-bold text-slate-400 dark:text-darkSubtext uppercase tracking-wider mb-2.5">
-                            Bisa Dibayar Melalui:
+                        <p class="text-[10px] font-extrabold text-slate-400 dark:text-darkSubtext uppercase tracking-wider mb-2.5">
+                            Mendukung Semua Bank & E-Wallet:
                         </p>
-                        <div class="flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">GoPay</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">DANA</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">OVO</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">ShopeePay</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">BCA Mobile</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Livin' Mandiri</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">BRImo</span>
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Semua QRIS</span>
+                        <div class="flex flex-wrap items-center justify-center gap-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">GoPay</span>
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">DANA</span>
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">OVO</span>
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">ShopeePay</span>
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">BCA</span>
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Livin' Mandiri</span>
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">BRImo</span>
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">BNI</span>
+                            <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Seabank</span>
+                            <span class="px-2 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-brandBlue dark:text-sky-400 border border-sky-200 dark:border-sky-800">Semua QRIS</span>
                         </div>
 
-                        <!-- Collapsible Payment Guide -->
+                        <!-- Collapsible Step-by-Step Payment Instructions -->
                         <div class="mt-4 border border-slate-200 dark:border-darkBorder rounded-2xl overflow-hidden bg-slate-50/60 dark:bg-slate-800/40 text-left">
                             <button type="button" onclick="toggleInstructions()" 
                                 class="w-full px-4 py-3 text-xs font-bold flex items-center justify-between text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
                                 <span class="flex items-center gap-2">
-                                    <i class="fa-regular fa-circle-question text-googleBlue dark:text-sky-400"></i>
-                                    <span>Panduan Cara Pembayaran</span>
+                                    <i class="fa-regular fa-circle-question text-brandBlue dark:text-sky-400"></i>
+                                    <span>Panduan Cara Bayar QRIS</span>
                                 </span>
                                 <i id="instruction-arrow" class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"></i>
                             </button>
-                            <div id="instruction-content" class="hidden px-4 pb-3.5 text-[11px] text-slate-600 dark:text-slate-300 space-y-1.5 border-t border-slate-200/60 dark:border-slate-700/60 pt-2.5">
-                                <div class="flex items-start gap-2">
-                                    <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-googleBlue dark:text-sky-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
-                                    <p>Buka aplikasi m-Banking (BCA, Mandiri, BRI, BNI) atau E-Wallet (GoPay, DANA, OVO, ShopeePay).</p>
+                            
+                            <div id="instruction-content" class="hidden px-4 pb-4 text-[11px] text-slate-600 dark:text-slate-300 space-y-2 border-t border-slate-200/60 dark:border-slate-700/60 pt-3">
+                                <!-- Mode 1: Scan Kamera Langsung -->
+                                <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mb-1 text-xs">
+                                    <i class="fa-solid fa-camera text-sky-500"></i>
+                                    <span>Opsi 1: Scan Langsung Menggunakan HP Lain</span>
                                 </div>
-                                <div class="flex items-start gap-2">
-                                    <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-googleBlue dark:text-sky-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
-                                    <p>Pilih menu <strong>Bayar / Scan QRIS</strong> dan arahkan kamera ke kode QR di atas.</p>
+                                <ol class="list-decimal list-inside space-y-1 pl-1 leading-relaxed">
+                                    <li>Buka aplikasi m-Banking (BCA, Mandiri, BRI, BNI) atau E-Wallet (GoPay, DANA, OVO, ShopeePay).</li>
+                                    <li>Pilih menu <strong>Bayar / Scan QRIS</strong>.</li>
+                                    <li>Arahkan kamera HP ke kode QR di atas.</li>
+                                    <li>Pastikan nominal yang ditagihkan sudah sesuai (<span class="font-bold font-mono text-brandBlue dark:text-sky-400"><%= formatRupiah(payment.amount) %></span>).</li>
+                                    <li>Masukkan PIN Anda. Transaksi akan terverifikasi otomatis dalam 2-5 detik!</li>
+                                </ol>
+
+                                <!-- Mode 2: Dari Galeri HP yang Sama -->
+                                <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 pt-2 mb-1 text-xs border-t border-slate-200/50 dark:border-slate-700/50">
+                                    <i class="fa-solid fa-images text-emerald-500"></i>
+                                    <span>Opsi 2: Bayar dari Galeri (Jika di 1 HP)</span>
                                 </div>
-                                <div class="flex items-start gap-2">
-                                    <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-googleBlue dark:text-sky-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
-                                    <p>Pastikan nominal total pembayaran sesuai tepat tanpa pembulatan.</p>
-                                </div>
-                                <div class="flex items-start gap-2">
-                                    <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-googleBlue dark:text-sky-400 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">4</span>
-                                    <p>Selesaikan pembayaran dengan PIN Anda. Sistem YuriPay memverifikasi transaksi secara realtime dalam 2 detik!</p>
-                                </div>
+                                <ol class="list-decimal list-inside space-y-1 pl-1 leading-relaxed">
+                                    <li>Klik tombol <strong>Unduh QR</strong> di atas untuk menyimpan gambar QR ke galeri Anda.</li>
+                                    <li>Buka aplikasi m-Banking atau E-Wallet favorit Anda.</li>
+                                    <li>Buka menu <strong>Scan QRIS</strong> lalu pilih ikon <strong>Galeri / Upload Gambar</strong>.</li>
+                                    <li>Pilih gambar QR yang baru saja diunduh, lalu selesaikan pembayaran.</li>
+                                </ol>
                             </div>
                         </div>
 
                         <!-- Security & Trust Indicators -->
-                        <div class="flex items-center justify-center gap-3 text-[11px] font-medium text-slate-400 dark:text-darkSubtext pt-3">
-                            <span class="flex items-center gap-1"><i class="fa-solid fa-shield-check text-emerald-500"></i> Standar QRIS BI</span>
+                        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] font-medium text-slate-400 dark:text-darkSubtext pt-3.5">
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-shield-check text-emerald-500"></i> Standar QRIS BI & ASPI</span>
                             <span>•</span>
                             <span class="flex items-center gap-1"><i class="fa-solid fa-lock text-sky-500"></i> Enkripsi 256-Bit</span>
                             <span>•</span>
-                            <span class="flex items-center gap-1"><i class="fa-solid fa-bolt text-amber-500"></i> Realtime Instant</span>
+                            <span class="flex items-center gap-1"><i class="fa-solid fa-bolt text-amber-500"></i> Realtime Settlement</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- STAGE 2: SUCCESS VIEW -->
-                <div id="stage-success" class="<%= payment.status === 'PAID' ? '' : 'hidden' %> text-center py-4">
-                    <div class="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-googleGreen dark:text-emerald-400 flex items-center justify-center text-4xl mx-auto mb-4">
+                <!-- STAGE 2: SUCCESS VIEW (Confirmed Paid) -->
+                <div id="stage-success" class="<%= payment.status === 'PAID' ? '' : 'hidden' %> text-center py-2 animate-pop-in">
+                    <!-- Big Success Icon Badge -->
+                    <div class="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-brandEmerald dark:text-emerald-400 flex items-center justify-center text-4xl mx-auto mb-3 shadow-lg shadow-emerald-500/10">
                         <i class="fa-solid fa-circle-check"></i>
                     </div>
 
-                    <span class="px-3.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-googleGreen dark:text-emerald-400 font-bold text-xs">
-                        LUNAS • TERVERIFIKASI
+                    <span class="px-3.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 font-extrabold text-xs inline-flex items-center gap-1.5 border border-emerald-300 dark:border-emerald-800">
+                        <i class="fa-solid fa-check-double text-[10px]"></i>
+                        <span>LUNAS • TERVERIFIKASI REALTIME</span>
                     </span>
 
                     <h2 class="text-2xl font-black text-slate-900 dark:text-white mt-3">Pembayaran Berhasil!</h2>
-                    <p class="text-3xl font-black font-mono text-googleGreen dark:text-emerald-400 my-2">
+                    
+                    <p class="text-3xl font-black font-mono text-brandEmerald dark:text-emerald-400 my-2 tracking-tight">
                         <%= formatRupiah(payment.amount) %>
                     </p>
                     <p class="text-xs text-slate-500 dark:text-darkSubtext">
-                        Terima kasih atas pembelian Anda di <%= storeName %>.
+                        Terima kasih! Transaksi Anda di <span class="font-bold text-slate-800 dark:text-slate-200"><%= storeName %></span> telah sukses.
                     </p>
 
-                    <!-- Receipt Details Box -->
-                    <div id="receipt-details" class="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-darkBorder my-5 text-left text-xs font-mono space-y-1.5 text-slate-700 dark:text-slate-300">
-                        <div><span class="text-slate-400">ID Tagihan:</span> <%= payment.payment_id %></div>
-                        <div><span class="text-slate-400">Pesanan:</span> <%= payment.custom_name %></div>
-                        <div><span class="text-slate-400">Metode:</span> QRIS Realtime Settlement</div>
-                        <div id="receipt-time"><span class="text-slate-400">Waktu:</span> <%= payment.paid_at ? new Date(payment.paid_at).toLocaleString('id-ID') : (payment.status === 'PAID' ? new Date().toLocaleTimeString('id-ID') : '-') %></div>
+                    <!-- Professional Digital Receipt Card -->
+                    <div id="receipt-details" class="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-darkBorder my-5 text-left text-xs font-mono space-y-2 text-slate-700 dark:text-slate-300">
+                        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
+                            <span class="text-slate-400">ID Pembayaran:</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200"><%= payment.payment_id %></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
+                            <span class="text-slate-400">Nomor Pesanan:</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200"><%= payment.order_id || payment.payment_id %></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
+                            <span class="text-slate-400">Pesanan:</span>
+                            <span class="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[190px]"><%= payment.custom_name %></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
+                            <span class="text-slate-400">Metode:</span>
+                            <span class="font-bold text-emerald-600 dark:text-emerald-400">QRIS Instant Settlement</span>
+                        </div>
+                        <div id="receipt-time" class="flex justify-between items-center">
+                            <span class="text-slate-400">Waktu Pelunasan:</span>
+                            <span id="receipt-time-val" class="font-bold text-slate-800 dark:text-slate-200">
+                                <%= payment.paid_at ? new Date(payment.paid_at).toLocaleString('id-ID') : (payment.status === 'PAID' ? new Date().toLocaleString('id-ID') : '-') %>
+                            </span>
+                        </div>
                     </div>
 
+                    <!-- OP Redirect or Print Button -->
                     <% if (payment.redirect_url) { %>
-                        <div class="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900 mb-4 text-xs text-googleBlue dark:text-sky-300 font-medium">
-                            <i class="fa-solid fa-spinner animate-spin mr-1"></i>
-                            <span>Mengalihkan otomatis ke toko dalam </span>
-                            <span id="redirect-countdown" class="font-bold font-mono text-sm text-googleBlue dark:text-sky-400">5</span>
-                            <span> detik...</span>
+                        <div class="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900 mb-4 text-xs text-brandBlue dark:text-sky-300 font-medium">
+                            <div class="flex items-center justify-center gap-1.5 mb-1">
+                                <i class="fa-solid fa-spinner animate-spin"></i>
+                                <span>Mengalihkan otomatis ke toko dalam </span>
+                                <span id="redirect-countdown" class="font-black font-mono text-base text-brandBlue dark:text-sky-400">5</span>
+                                <span> detik...</span>
+                            </div>
+                            <div class="w-full bg-blue-200 dark:bg-blue-900/60 rounded-full h-1.5 overflow-hidden mt-1.5">
+                                <div id="redirect-progress" class="bg-brandBlue dark:bg-sky-400 h-1.5 rounded-full transition-all duration-1000 ease-linear" style="width: 100%;"></div>
+                            </div>
                         </div>
+
                         <a id="btn-redirect-now" href="<%= payment.redirect_url %>" 
-                           class="w-full py-4 bg-googleBlue hover:bg-googleBlueHover dark:bg-sky-600 dark:hover:bg-sky-500 text-white font-bold rounded-2xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm">
+                           class="w-full py-4 bg-brandBlue hover:bg-brandBlueHover dark:bg-sky-600 dark:hover:bg-sky-500 text-white font-extrabold rounded-2xl transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 text-sm active:scale-[0.99]">
                             <span>Kembali ke Toko Sekarang (OP Redirect)</span>
                             <i class="fa-solid fa-arrow-up-right-from-square"></i>
                         </a>
                     <% } else { %>
                         <button type="button" onclick="window.print()" 
-                            class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-2xl transition border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 text-sm">
+                            class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-2xl transition border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 text-sm active:scale-[0.99]">
                             <i class="fa-solid fa-print"></i>
                             <span>Cetak Bukti Pembayaran</span>
                         </button>
@@ -298,16 +447,23 @@
     </main>
 
     <!-- Footer -->
-    <footer class="text-center py-4 text-xs text-slate-400 dark:text-darkSubtext">
-        &copy; 2026 <%= appName %> • Secure QRIS Checkout for <%= storeName %>
+    <footer class="text-center py-4 px-4 text-xs text-slate-400 dark:text-darkSubtext transition-colors">
+        <div class="flex items-center justify-center gap-2 font-semibold">
+            <span>&copy; 2026 <%= appName %></span>
+            <span>•</span>
+            <span class="text-slate-500 dark:text-slate-400">by myzert</span>
+        </div>
+        <p class="text-[10px] text-slate-400 dark:text-slate-400 mt-1">
+            Enterprise QRIS Gateway for <%= storeName %> • Unofficial Open-Source Solution
+        </p>
     </footer>
 
 
     <!-- ============================================== -->
     <!-- CUTE MARIN KITAGAWA THANK YOU POP-UP MODAL     -->
     <!-- ============================================== -->
-    <div id="anime-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md hidden transition-all duration-300">
-        <div class="bg-white dark:bg-darkCard rounded-[36px] max-w-sm w-full p-6 text-center shadow-2xl border-2 border-pink-300 dark:border-pink-500/40 relative overflow-hidden scale-in">
+    <div id="anime-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden transition-all duration-300">
+        <div class="bg-white dark:bg-darkCard rounded-[36px] max-w-sm w-full p-6 text-center shadow-2xl border-2 border-pink-300 dark:border-pink-500/40 relative overflow-hidden animate-pop-in">
             <!-- Background Soft Glow -->
             <div class="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-pink-200/50 dark:bg-pink-600/20 blur-2xl pointer-events-none"></div>
             <div class="absolute -bottom-16 -left-16 w-36 h-36 rounded-full bg-blue-200/50 dark:bg-blue-600/20 blur-2xl pointer-events-none"></div>
@@ -317,7 +473,7 @@
                 <img src="/images/thank-you.webp" 
                      onerror="this.onerror=null; this.src='https://gifdb.com/images/high/marin-kitagawa-thank-you-anime-cute-smile-usr1oj8xvh9j7of9.webp';" 
                      alt="Marin Kitagawa Thank You" 
-                     class="w-56 h-56 mx-auto object-cover rounded-3xl shadow-lg border-2 border-pink-300 dark:border-pink-400 bounce-slow">
+                     class="w-56 h-56 mx-auto object-cover rounded-3xl shadow-lg border-2 border-pink-300 dark:border-pink-400 animate-float">
                 <div class="absolute -bottom-3 right-8 bg-pink-500 text-white text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md border-2 border-white dark:border-darkCard flex items-center gap-1">
                     <span>Arigatou!</span>
                     <i class="fa-solid fa-heart text-[10px]"></i>
@@ -327,12 +483,12 @@
             <!-- Heading & Japanese Thank You -->
             <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-2">Arigatou Gozaimasu! ✨</h3>
             <p class="text-xs text-slate-500 dark:text-darkSubtext mt-1">
-                Terima kasih banyak atas pembeliannya di <span class="font-bold text-googleBlue dark:text-sky-400"><%= storeName %></span>!
+                Terima kasih banyak atas pembeliannya di <span class="font-bold text-brandBlue dark:text-sky-400"><%= storeName %></span>!
             </p>
 
             <!-- Amount Badge -->
             <div class="my-4 p-3.5 bg-gradient-to-r from-pink-50 via-slate-50 to-blue-50 dark:from-pink-950/30 dark:via-slate-800 dark:to-blue-950/30 rounded-2xl border border-pink-200/80 dark:border-pink-800/40">
-                <p class="text-[11px] uppercase tracking-wider font-bold text-pink-600 dark:text-pink-400">Pembayaran Berhasil Diterima</p>
+                <p class="text-[10px] uppercase tracking-wider font-extrabold text-pink-600 dark:text-pink-400">Pembayaran Berhasil Diterima</p>
                 <h4 class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
                     <%= payment ? formatRupiah(payment.amount) : '' %>
                 </h4>
@@ -340,7 +496,7 @@
 
             <!-- Action Button -->
             <button type="button" onclick="closeAnimeModal()"
-                class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-extrabold rounded-2xl transition shadow-lg shadow-pink-500/30 flex items-center justify-center gap-2 text-sm">
+                class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-extrabold rounded-2xl transition shadow-lg shadow-pink-500/30 flex items-center justify-center gap-2 text-sm active:scale-[0.99]">
                 <span>Sama-Sama! Lanjutkan</span>
                 <i class="fa-solid fa-heart"></i>
             </button>
@@ -352,36 +508,50 @@
     <script>
         <% if (payment) { %>
         const paymentId = '<%= payment.payment_id %>';
+        const orderId = '<%= payment.order_id || payment.payment_id %>';
         const totalAmount = <%= payment.amount %>;
-        const expiresAt = new Date('<%= payment.expires_at %>').getTime();
+        // Numeric timestamp eliminates any browser date-string parsing discrepancy (NaN)
+        const expiresAt = <%= payment.expires_timestamp || (payment.expires_at ? new Date(payment.expires_at).getTime() : 0) %>;
+        const createdAt = <%= payment.created_timestamp || (payment.created_at ? new Date(payment.created_at).getTime() : Date.now()) %>;
         const redirectUrl = <%= payment.redirect_url ? JSON.stringify(payment.redirect_url) : 'null' %>;
         <% } else { %>
         const paymentId = null;
+        const orderId = null;
+        const totalAmount = 0;
+        const expiresAt = 0;
+        const createdAt = 0;
+        const redirectUrl = null;
         <% } %>
 
         let isPaid = <%= payment && payment.status === 'PAID' ? 'true' : 'false' %>;
+        let isExpired = false;
         let pollTimer = null;
         let countdownTimer = null;
+        let finalRedirectUrl = redirectUrl;
 
-        // Dark Mode Logic
+        // Dark Mode Controller
         function initTheme() {
             const savedTheme = localStorage.getItem('yuripay_theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
                 document.documentElement.classList.add('dark');
-                document.getElementById('theme-icon').className = 'fa-solid fa-sun';
+                const icon = document.getElementById('theme-icon');
+                if (icon) icon.className = 'fa-solid fa-sun text-amber-400';
             } else {
                 document.documentElement.classList.remove('dark');
-                document.getElementById('theme-icon').className = 'fa-solid fa-moon';
+                const icon = document.getElementById('theme-icon');
+                if (icon) icon.className = 'fa-solid fa-moon text-slate-700';
             }
         }
 
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('yuripay_theme', isDark ? 'dark' : 'light');
-            document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = isDark ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon text-slate-700';
+            }
         }
-
         initTheme();
 
         // Audio files
@@ -419,7 +589,7 @@
         function initSoundSetting() {
             const icon = document.getElementById('sound-icon');
             if (icon) {
-                icon.className = isMuted ? 'fa-solid fa-volume-xmark text-slate-400' : 'fa-solid fa-volume-high text-sky-500';
+                icon.className = isMuted ? 'fa-solid fa-volume-xmark text-slate-400' : 'fa-solid fa-volume-high text-brandBlue dark:text-sky-400';
             }
         }
         function toggleSound() {
@@ -455,39 +625,65 @@
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const now = ctx.currentTime;
 
-                // Subtle two-tone chime (523Hz -> 784Hz)
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.9);
+                // Two-tone bell chord (523.25Hz [C5] -> 783.99Hz [G5])
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, now);
+                osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.14);
+                gain1.gain.setValueAtTime(0.35, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 1.1);
+
+                // Harmonious shimmer overtone
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(1046.5, now + 0.08);
+                gain2.gain.setValueAtTime(0.15, now + 0.08);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.08);
+                osc2.stop(now + 0.9);
             } catch (e) {
                 console.warn('Default audio chime error:', e);
             }
         }
 
+        // Confetti fireworks
         function launchConfetti() {
             if (typeof confetti === 'function') {
                 confetti({
-                    particleCount: 90,
+                    particleCount: 100,
                     spread: 80,
                     origin: { y: 0.6 }
                 });
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 60,
+                        angle: 60,
+                        spread: 60,
+                        origin: { x: 0.1, y: 0.7 }
+                    });
+                    confetti({
+                        particleCount: 60,
+                        angle: 120,
+                        spread: 60,
+                        origin: { x: 0.9, y: 0.7 }
+                    });
+                }, 300);
             }
         }
 
-        let finalRedirectUrl = redirectUrl;
-
-        function buildOpRedirectUrl(targetUrl, paymentId, orderId, amount, tx) {
+        // Build Midtrans-compatible OP redirect URL
+        function buildOpRedirectUrl(targetUrl, paymentId, ordId, amount, tx) {
             try {
                 const urlObj = new URL(targetUrl);
-                urlObj.searchParams.set('order_id', orderId || paymentId);
+                urlObj.searchParams.set('order_id', ordId || paymentId);
                 urlObj.searchParams.set('status_code', '200');
                 urlObj.searchParams.set('transaction_status', 'settlement');
                 urlObj.searchParams.set('payment_type', 'qris');
@@ -499,7 +695,7 @@
                 return urlObj.toString();
             } catch (e) {
                 const sep = targetUrl.includes('?') ? '&' : '?';
-                return `${targetUrl}${sep}order_id=${encodeURIComponent(orderId || paymentId)}&status_code=200&transaction_status=settlement&gross_amount=${Number(amount).toFixed(2)}&payment_id=${paymentId}`;
+                return `${targetUrl}${sep}order_id=${encodeURIComponent(ordId || paymentId)}&status_code=200&transaction_status=settlement&gross_amount=${Number(amount).toFixed(2)}&payment_id=${paymentId}`;
             }
         }
 
@@ -514,47 +710,164 @@
             }
         }
 
+        // Copy Amount with visual and haptic feedback
         function copyAmount(val) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(val).then(showCopiedState);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = val;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showCopiedState();
+            }
+
+            // Haptic vibration feedback on mobile
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        function showCopiedState() {
+            const label = document.getElementById('copy-text');
+            const icon = document.getElementById('copy-icon');
+            const origText = label.innerText;
+            
+            label.innerText = 'Nominal Tersalin!';
+            icon.className = 'fa-solid fa-check text-emerald-500';
+            
+            setTimeout(() => {
+                label.innerText = origText;
+                icon.className = 'fa-regular fa-copy text-brandBlue dark:text-sky-400';
+            }, 2000);
+        }
+
+        // Generic copy helper
+        function copyText(val, iconId) {
+            if (!val) return;
             navigator.clipboard.writeText(val).then(() => {
-                const label = document.getElementById('copy-text');
-                const orig = label.innerText;
-                label.innerText = 'Tersalin!';
-                setTimeout(() => { label.innerText = orig; }, 2000);
+                const icon = document.getElementById(iconId);
+                if (icon) {
+                    const origClass = icon.className;
+                    icon.className = 'fa-solid fa-check text-emerald-500';
+                    setTimeout(() => { icon.className = origClass; }, 2000);
+                }
             });
+            if (navigator.vibrate) navigator.vibrate(40);
         }
 
-        // Countdown timer
-        function startCountdown() {
-            if (!paymentId || isPaid) return;
+        // ====================================================
+        // ROCK-SOLID COUNTDOWN TIMER WITH PROGRESS BAR
+        // ====================================================
+        function updateCountdown() {
+            if (isPaid || !expiresAt) return;
+            
             const timerEl = document.getElementById('countdown-timer');
+            const badgeEl = document.getElementById('countdown-badge');
+            const progressEl = document.getElementById('countdown-progress-bar');
+            const statusLabel = document.getElementById('status-label');
+            const checkBtn = document.getElementById('btn-check-manual');
+            const checkBtnText = document.getElementById('check-btn-text');
+            const expiredOverlay = document.getElementById('qr-expired-overlay');
+            const scanLine = document.getElementById('scan-line');
+            const pingDot = document.getElementById('ping-dot');
 
-            countdownTimer = setInterval(() => {
-                if (isPaid) {
-                    clearInterval(countdownTimer);
-                    return;
-                }
-                const now = Date.now();
-                const diff = Math.max(0, expiresAt - now);
-                const minutes = Math.floor(diff / 60000);
-                const seconds = Math.floor((diff % 60000) / 1000);
+            const now = Date.now();
+            const diff = Math.max(0, expiresAt - now);
+            const totalDuration = Math.max(1000, expiresAt - createdAt);
+            const percent = Math.max(0, Math.min(100, (diff / totalDuration) * 100));
 
-                if (timerEl) {
-                    timerEl.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            if (timerEl) {
+                timerEl.innerText = timeString;
+            }
+
+            if (progressEl) {
+                progressEl.style.width = percent + '%';
+            }
+
+            // Dynamic color progression based on remaining time
+            if (diff > 300000) {
+                // > 5 minutes: Healthy Emerald
+                if (badgeEl) {
+                    badgeEl.className = 'font-mono font-extrabold px-2.5 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300/50 dark:border-emerald-800 transition-colors';
+                }
+                if (progressEl) {
+                    progressEl.className = 'h-2 rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-500 ease-linear';
+                }
+            } else if (diff > 120000) {
+                // 2 - 5 minutes: Warning Amber
+                if (badgeEl) {
+                    badgeEl.className = 'font-mono font-extrabold px-2.5 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-300/50 dark:border-amber-800 transition-colors';
+                }
+                if (progressEl) {
+                    progressEl.className = 'h-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500 ease-linear';
+                }
+            } else if (diff > 0) {
+                // < 2 minutes: Urgent Red (Pulsing)
+                if (badgeEl) {
+                    badgeEl.className = 'font-mono font-extrabold px-2.5 py-0.5 rounded-full text-xs bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-300/50 dark:border-rose-800 animate-pulse transition-colors';
+                }
+                if (progressEl) {
+                    progressEl.className = 'h-2 rounded-full bg-rose-500 animate-pulse transition-all duration-500 ease-linear';
+                }
+            } else {
+                // EXPIRED
+                isExpired = true;
+                if (countdownTimer) clearInterval(countdownTimer);
+                if (pollTimer) clearInterval(pollTimer);
+
+                if (timerEl) timerEl.innerText = '00:00 (Kedaluwarsa)';
+                if (badgeEl) {
+                    badgeEl.className = 'font-mono font-extrabold px-2.5 py-0.5 rounded-full text-xs bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-300 dark:border-slate-700';
+                }
+                if (progressEl) {
+                    progressEl.style.width = '0%';
+                    progressEl.className = 'h-2 rounded-full bg-slate-400';
                 }
 
-                if (diff <= 0) {
-                    clearInterval(countdownTimer);
-                    if (timerEl) timerEl.innerText = 'EXPIRED';
-                    document.getElementById('status-label').innerText = 'Waktu pembayaran telah habis.';
+                if (statusLabel) {
+                    statusLabel.innerText = 'Batas waktu pembayaran habis. Tagihan telah kedaluwarsa.';
                 }
-            }, 1000);
+                if (pingDot) {
+                    pingDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 inline-block';
+                }
+                if (scanLine) {
+                    scanLine.classList.add('hidden');
+                }
+                if (expiredOverlay) {
+                    expiredOverlay.classList.remove('hidden');
+                }
+                if (checkBtn) {
+                    checkBtn.disabled = true;
+                    checkBtn.classList.remove('bg-brandBlue', 'hover:bg-brandBlueHover', 'dark:bg-sky-600', 'dark:hover:bg-sky-500', 'shadow-blue-500/25');
+                    checkBtn.classList.add('bg-slate-300', 'dark:bg-slate-800', 'text-slate-500', 'cursor-not-allowed', 'shadow-none');
+                }
+                if (checkBtnText) {
+                    checkBtnText.innerText = 'Tagihan Telah Kedaluwarsa';
+                }
+            }
         }
 
-        // Auto polling every 2.5s
+        function startCountdown() {
+            if (!paymentId || isPaid || !expiresAt) return;
+            // Immediate tick to paint accurate time without 1s lag!
+            updateCountdown();
+            countdownTimer = setInterval(updateCountdown, 1000);
+        }
+
+        // ====================================================
+        // REALTIME MUTATION POLLING
+        // ====================================================
         function startPolling() {
-            if (!paymentId || isPaid) return;
+            if (!paymentId || isPaid || isExpired) return;
             pollTimer = setInterval(async () => {
-                if (isPaid) {
+                if (isPaid || isExpired) {
                     clearInterval(pollTimer);
                     return;
                 }
@@ -563,7 +876,7 @@
         }
 
         async function checkStatus(isManual = false) {
-            if (!paymentId || isPaid) return;
+            if (!paymentId || isPaid || isExpired) return;
 
             const icon = document.getElementById('check-icon');
             const btn = document.getElementById('btn-check-manual');
@@ -572,6 +885,7 @@
             if (isManual) {
                 if (icon) icon.classList.add('animate-spin');
                 if (btn) btn.disabled = true;
+                if (statusLabel) statusLabel.innerText = 'Menghubungkan ke mutasi server...';
             }
 
             try {
@@ -580,15 +894,20 @@
 
                 if (data.success && data.paid) {
                     handleSuccess(data);
+                } else if (data.status === 'EXPIRED') {
+                    isExpired = true;
+                    updateCountdown();
                 } else if (isManual) {
-                    statusLabel.innerText = data.message || 'Pembayaran belum terdeteksi. Silakan coba beberapa detik lagi.';
+                    if (statusLabel) {
+                        statusLabel.innerText = data.message || 'Pembayaran belum terdeteksi. Silakan selesaikan transfer lalu coba lagi.';
+                    }
                 }
             } catch (err) {
-                console.warn('Status poll error:', err);
+                console.warn('Status poll warning:', err);
             } finally {
                 if (isManual) {
                     if (icon) icon.classList.remove('animate-spin');
-                    if (btn) btn.disabled = false;
+                    if (btn && !isExpired) btn.disabled = false;
                 }
             }
         }
@@ -597,16 +916,18 @@
             checkStatus(true);
         }
 
-        // Handle Payment Confirmed
+        // ====================================================
+        // PAYMENT CONFIRMATION & CELEBRATION
+        // ====================================================
         function handleSuccess(data) {
             isPaid = true;
             if (pollTimer) clearInterval(pollTimer);
             if (countdownTimer) clearInterval(countdownTimer);
 
-            // 1. Confetti party
+            // 1. Confetti burst
             launchConfetti();
 
-            // 2. Play sound & display celebration based on Success Theme
+            // 2. Play sound & celebration based on Success Theme
             if (currentSuccessTheme === 'anime') {
                 playCuteSound();
                 showAnimeModal();
@@ -614,26 +935,32 @@
                 playDefaultChime();
             }
 
-            // 3. Switch UI Card to Success View
-            document.getElementById('stage-waiting').classList.add('hidden');
-            document.getElementById('stage-success').classList.remove('hidden');
+            // 3. Switch UI View to Success Stage
+            const waitingEl = document.getElementById('stage-waiting');
+            const successEl = document.getElementById('stage-success');
+            if (waitingEl) waitingEl.classList.add('hidden');
+            if (successEl) successEl.classList.remove('hidden');
 
-            const timeEl = document.getElementById('receipt-time');
-            if (timeEl) {
-                timeEl.innerHTML = `<span class="text-slate-400">Waktu:</span> ${new Date().toLocaleTimeString('id-ID')}`;
+            const timeValEl = document.getElementById('receipt-time-val');
+            if (timeValEl) {
+                timeValEl.innerText = new Date().toLocaleString('id-ID');
             }
 
-            // 5. Automatic OP redirect countdown if redirect_url exists
+            // 4. OP Redirect Handling
             if (redirectUrl) {
-                finalRedirectUrl = buildOpRedirectUrl(redirectUrl, paymentId, '<%= payment ? payment.order_id : "" %>', totalAmount, data.transaction);
+                finalRedirectUrl = buildOpRedirectUrl(redirectUrl, paymentId, orderId, totalAmount, data?.transaction);
                 const btnRedirect = document.getElementById('btn-redirect-now');
                 if (btnRedirect) btnRedirect.href = finalRedirectUrl;
 
                 let secLeft = 5;
                 const rEl = document.getElementById('redirect-countdown');
+                const pEl = document.getElementById('redirect-progress');
+                
                 const rInterval = setInterval(() => {
                     secLeft--;
                     if (rEl) rEl.innerText = secLeft;
+                    if (pEl) pEl.style.width = (secLeft / 5 * 100) + '%';
+                    
                     if (secLeft <= 0) {
                         clearInterval(rInterval);
                         window.location.href = finalRedirectUrl;
@@ -642,19 +969,19 @@
             }
         }
 
+        // Initialize on DOM Ready
         window.addEventListener('DOMContentLoaded', () => {
             if (paymentId && !isPaid) {
                 startCountdown();
                 startPolling();
             } else if (paymentId && isPaid) {
-                // Ensure UI cleanly shows success and hides waiting stage
                 const waitingEl = document.getElementById('stage-waiting');
                 const successEl = document.getElementById('stage-success');
                 if (waitingEl) waitingEl.classList.add('hidden');
                 if (successEl) successEl.classList.remove('hidden');
 
                 if (redirectUrl) {
-                    finalRedirectUrl = buildOpRedirectUrl(redirectUrl, paymentId, '<%= payment ? payment.order_id : "" %>', totalAmount);
+                    finalRedirectUrl = buildOpRedirectUrl(redirectUrl, paymentId, orderId, totalAmount);
                     const btnRedirect = document.getElementById('btn-redirect-now');
                     if (btnRedirect) btnRedirect.href = finalRedirectUrl;
                 }
