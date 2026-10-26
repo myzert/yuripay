@@ -138,6 +138,12 @@ Merchant dan pelanggan dapat memilih gaya perayaan pembayaran sesuai kebutuhan b
 
 ### 4. 🛡️ Idempotensi Transaksi Penuh
 - Pembeli yang me-refresh browser atau mengalami gangguan koneksi tidak akan membuat tagihan baru.
+- Sistem mengikat transaksi berdasarkan `order_id` yang sama, menjaga integritas mutasi GoPay.
+
+### 5. 🕶️ Stealth Auto-Redirect Port Pembayaran (Anti-Probe & Bot Scanner)
+- Demi keamanan operasional dari pemindaian bot, web crawler, atau pihak tidak bertanggung jawab, akses langsung ke root port pembayaran publik (`http://localhost:3001/` atau rute acak) **otomatis dialihkan (302 Redirect)** ke `https://www.google.com` atau repository GitHub resmi `https://github.com/myzert/yuripay`.
+- Hanya pelanggan yang memiliki link resmi tagihan (`/pay/YURI-XXXXXX`) yang dapat mengakses halaman checkout.
+- URL pengalihan ini dapat dikonfigurasi melalui variabel `PAYMENT_ROOT_REDIRECT_URL` di file `.env`.
 - Pengiriman parameter `order_id` yang sama akan mengembalikan data pembayaran yang ada secara konsisten.
 - Halaman `/pay/:id` yang sudah berstatus `PAID` akan **tetap berstatus LUNAS** saat di-refresh atau dibuka kembali di kemudian hari.
 

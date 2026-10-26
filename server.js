@@ -18,6 +18,7 @@ const API_KEY = process.env.API_KEY || 'yuripay_live_key_9981248712';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'zertcihuy@gmail.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'zertcihuy@admin#123';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'yuripay_super_secret_session_key_9981248712';
+const PAYMENT_ROOT_REDIRECT_URL = process.env.PAYMENT_ROOT_REDIRECT_URL || 'https://www.google.com';
 
 function getPaymentBaseUrl(req) {
     if (process.env.PAYMENT_BASE_URL) {
@@ -477,33 +478,29 @@ paymentApp.get('/api/check-payment/:id', statusPollLimiter, async (req, res) => 
 // Create Payment API also available on Port 3001 for developers (Rate Limited)
 paymentApp.post('/api/create-payment', createPaymentLimiter, handleCreatePayment);
 
-// Fallback for root on Port 3001: Informative landing
+// ====================================================
+// STEALTH REDIRECT FOR PORT 3001 (ANTI-SCANNER & BOT PROTECTION)
+// ====================================================
+// Otomatis mengalihkan root port pembayaran (localhost:3001/) ke Google atau GitHub YuriPay
+// agar aman dari probe scanner, bot crawling, atau pihak tidak bertanggung jawab.
 paymentApp.get('/', (req, res) => {
-    res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <title>${APP_NAME} Payment Gateway</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
-            <style>
-                body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-                .card { background: #1e293b; padding: 40px; border-radius: 24px; border: 1px solid #334155; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-                h1 { margin: 0 0 10px; font-size: 24px; color: #38bdf8; }
-                p { color: #94a3b8; font-size: 14px; line-height: 1.6; }
-                .badge { display: inline-block; padding: 6px 14px; background: #0369a1; color: white; border-radius: 999px; font-size: 12px; font-weight: 700; margin-bottom: 16px; }
-            </style>
-        </head>
-        <body>
-            <div class="card">
-                <div class="badge">SECURE GATEWAY ACTIVE</div>
-                <h1>${APP_NAME} • ${STORE_NAME}</h1>
-                <p>Halaman redirect pembayaran customer aktif di port ini (Port ${PAYMENT_PORT}). Masuk melalui tautan pembayaran pesanan Anda (contoh: <code>/pay/YURI-XXXXXX</code>).</p>
-            </div>
-        </body>
-        </html>
-    `);
+    res.redirect(302, PAYMENT_ROOT_REDIRECT_URL);
+});
+
+paymentApp.get('/pay', (req, res) => {
+    res.redirect(302, PAYMENT_ROOT_REDIRECT_URL);
+});
+
+paymentApp.get('/pay/', (req, res) => {
+    res.redirect(302, PAYMENT_ROOT_REDIRECT_URL);
+});
+
+// Catch-all for unknown routes on Port 3001: Stealth bounce to Google / GitHub
+paymentApp.use((req, res) => {
+    if (req.method === 'GET' || req.method === 'HEAD') {
+        return res.redirect(302, PAYMENT_ROOT_REDIRECT_URL);
+    }
+    res.status(404).json({ success: false, message: 'Resource Not Found' });
 });
 
 // ----------------------------------------------------
